@@ -1,0 +1,24 @@
+# Created by venv; see https://docs.python.org/3/library/venv.html
+
+# Ambiente virtual
+venv/
+.venv/
+env/
+
+# Cache do Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribuição / build
+build/
+dist/
+*.egg-info/
+
+# Editores / IDEs
+.vscode/
+.idea/
+
+# Sistema operacional
+.DS_Store
+Thumbs.db

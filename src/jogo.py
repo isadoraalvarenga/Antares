@@ -5,7 +5,7 @@ from src.config import (
     ALTURA_TELA,
     FPS,
     TITULO_JOGO,
-    CINZA,
+    WALLPAPER,
     CAMINHO_RECORDE,
     CAMINHO_SPRITES,
 )
@@ -68,6 +68,12 @@ def executar_jogo():
     vidas = 3
     recorde = carregar_recorde(CAMINHO_RECORDE)
 
+    imagem_original = pygame.image.load("assets/imagens/starsky.jpg").convert()
+
+    imagem_original = pygame.transform.scale(imagem_original, (800, 600))
+
+    
+
     # Loop principal: processa entrada, atualiza estado e renderiza a cena.
     while rodando:
         relogio.tick(FPS)
@@ -127,16 +133,15 @@ def executar_jogo():
             recorde = pontos
             salvar_recorde(CAMINHO_RECORDE, recorde)
 
-        pygame.display.set_caption(
-            f"{TITULO_JOGO} | Pontos: {pontos} | Recorde: {recorde} | Vidas: {vidas}"
-        )
+        tela.blit(imagem_original, (0, 0))
 
-        tela.fill(CINZA)
-
-        # Desenhando os elementos na tela passando a imagem e o rect de cada dicionário
         tela.blit(gema["imagem"], gema["rect"])
         tela.blit(inimigo["imagem"], inimigo["rect"])
         tela.blit(jogador["imagem"], jogador["rect"])
+
+        pygame.display.set_caption(
+            f"{TITULO_JOGO} | Pontos: {pontos} | Recorde: {recorde} | Vidas: {vidas}"
+        )
 
         pygame.display.flip()
 
