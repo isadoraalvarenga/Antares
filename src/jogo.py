@@ -29,7 +29,7 @@ def executar_jogo():
     pygame.init()
     
 
-    tela = pygame.display.set_mode((LARGURA_TELA, ALTURA_TELA))
+    tela = pygame.display.set_mode((LARGURA_TELA, ALTURA_TELA), pygame.FULLSCREEN)
     pygame.display.set_caption(TITULO_JOGO)
 
     relogio = pygame.time.Clock()
@@ -39,7 +39,7 @@ def executar_jogo():
 
 
     # Jogador: usando tamanho 110x110 para capturar o quadrado perfeitamente
-    player_image = pegar_sprite(CAMINHO_SPRITES, x=110, y=120, width=190, height=190, scale=0.5)
+    player_image = pegar_sprite("assets/imagens/millenium_falcon_fr.bmp", x=0, y=0, width=118, height=32, scale=1)
 
     # Gema pequena: usando tamanho 64x64
     gem_image    = pegar_sprite(CAMINHO_SPRITES, x=900, y=690, width=200, height=200, scale=0.5)
@@ -63,7 +63,7 @@ def executar_jogo():
         "rect": bat_image.get_rect(topleft=(200, 500))
     }
 
-    velocidade = 5
+    velocidade = 10
     pontos = 0
     vidas = 3
     recorde = carregar_recorde(CAMINHO_RECORDE)
@@ -80,6 +80,8 @@ def executar_jogo():
 
         for evento in pygame.event.get():
             if evento.type == pygame.QUIT:
+                rodando = False
+            if evento.type == pygame.KEYDOWN and evento.key == pygame.K_ESCAPE:
                 rodando = False
 
         teclas = pygame.key.get_pressed()
