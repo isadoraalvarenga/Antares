@@ -6,9 +6,7 @@ from src.config import (
     ALTURA_TELA,
     FPS,
     TITULO_JOGO,
-    WALLPAPER,
     CAMINHO_RECORDE,
-    CAMINHO_SPRITES,
 )
 
 from src.funcoes import (
@@ -54,26 +52,10 @@ def executar_jogo():
     # Jogador: usando tamanho 110x110 para capturar o quadrado perfeitamente
     player_image = pegar_sprite("assets/imagens/millenium_falcon_fr.bmp", x=0, y=0, width=118, height=32, scale=1)
 
-    # Gema pequena: usando tamanho 64x64
-    gem_image    = pegar_sprite(CAMINHO_SPRITES, x=900, y=690, width=200, height=200, scale=0.5)
-
-    # Morcego: usando tamanho 180x120 por causa das asas abertas
-    bat_image    = pegar_sprite(CAMINHO_SPRITES, x=905, y=1060, width=200, height=130, scale=0.5)
-
     # 2. Criando a estrutura de Sprites usando Dicionários
     jogador = {
         "imagem": player_image,
         "rect": player_image.get_rect(topleft=(100, 100))
-    }
-
-    gema = {
-        "imagem": gem_image,
-        "rect": gem_image.get_rect(topleft=(500, 300))
-    }
-
-    inimigo = {
-        "imagem": bat_image,
-        "rect": bat_image.get_rect(topleft=(200, 500))
     }
 
     lista_obstaculos = []
@@ -130,33 +112,6 @@ def executar_jogo():
             elif obstaculo.rect.y > ALTURA_TELA:
                 lista_obstaculos.remove(obstaculo)
 
-        # Verificação de colisão com a Gema (antigo 'item')
-        if verificar_colisao(jogador["rect"], gema["rect"]):
-            pontos = calcular_pontos(pontos, 10)
-
-            # Move a gema de lugar ao coletar
-            gema["rect"].x += 80
-            gema["rect"].y += 50
-
-            # Se a gema sair da tela, volta para uma posição segura
-            if gema["rect"].x > LARGURA_TELA - gema["rect"].width:
-                gema["rect"].x = 50
-            if gema["rect"].y > ALTURA_TELA - gema["rect"].height:
-                gema["rect"].y = 50
-
-        # Verificação de colisão com o Inimigo
-        if verificar_colisao(jogador["rect"], inimigo["rect"]):
-            vidas = tomar_dano(vidas, 1)
-
-            # Afasta o inimigo ao colidir
-            inimigo["rect"].x += 80
-            inimigo["rect"].y += 50
-
-            if inimigo["rect"].x > LARGURA_TELA - inimigo["rect"].width:
-                inimigo["rect"].x = 50
-            if inimigo["rect"].y > ALTURA_TELA - inimigo["rect"].height:
-                inimigo["rect"].y = 50
-
         # Regras de fim de jogo e recorde
         if jogador_perdeu(vidas):
             rodando = False
@@ -167,18 +122,12 @@ def executar_jogo():
 
         tela.blit(imagem_original, (0, 0))
 
-        tela.blit(gema["imagem"], gema["rect"])
-        tela.blit(inimigo["imagem"], inimigo["rect"])
         tela.blit(jogador["imagem"], jogador["rect"])
 
         for obstaculo in lista_obstaculos:
             obstaculo.desenhar(tela)
 
         desenhar_barra_vida(tela, 20, 20, vidas, vidas_maximas=3)
-
-        pygame.display.set_caption(
-            f"{TITULO_JOGO} | Pontos: {pontos} | Recorde: {recorde} | Vidas: {vidas}"
-        )
 
         pygame.display.flip()
 
