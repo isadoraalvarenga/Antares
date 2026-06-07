@@ -41,7 +41,7 @@ class Obstacle:
         
         # Se quiser testar a imagem direto depois, é só descomentar as duas linhas abaixo
         # e apagar as duas linhas do quadrado azul ali em cima:
-        self.image = pegar_sprite("assets/imagens/asteroide_sheet.png", x=0, y=0, width=120, height=230, scale=0.3)
+        self.image = pegar_sprite("assets/imagens/asteroide_sheet.png", x=0, y=0, width=48, height=48, scale=1)
         
         self.rect = self.image.get_rect()
         
