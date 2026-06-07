@@ -6,13 +6,13 @@ from src.config import (
     ALTURA_TELA,
     FPS,
     TITULO_JOGO,
-    WALLPAPER,
     CAMINHO_RECORDE,
-    CAMINHO_SPRITES,
+    FONTE,
+    RED_ANTARES,
+    BRANCO,
 )
 
 from src.funcoes import (
-    calcular_pontos,
     jogador_perdeu,
     limitar_valor,
     verificar_colisao,
@@ -23,6 +23,61 @@ from src.dados import (
     salvar_recorde,
     carregar_recorde,
 )
+
+def tela_fim_jogo(tela, fundo, relogio):
+    """Mostra a tela de fim de jogo. Retorna True para reiniciar, False para sair."""
+    # Fontes e textos fixos sao criados uma vez, fora do loop.
+    fonte_titulo = pygame.font.Font(FONTE, 100)
+    fonte_subtitulo = pygame.font.Font(FONTE, 50)
+    fonte_botao = pygame.font.Font(FONTE, 30)
+
+    titulo = fonte_titulo.render("Antares", True, RED_ANTARES)
+    rect_titulo = titulo.get_rect(center=(LARGURA_TELA // 2, 120))
+
+    subtitulo = fonte_subtitulo.render("Game over", True, RED_ANTARES)
+    rect_subtitulo = subtitulo.get_rect(center=(LARGURA_TELA // 2, 200))
+
+    rotulo_jogar = fonte_botao.render("Jogar", True, BRANCO)
+    rotulo_sair = fonte_botao.render("Sair", True, BRANCO)
+
+    # Areas dos botoes (servem para desenhar e para detectar o clique).
+    botao_jogar = pygame.Rect(0, 0, 240, 60)
+    botao_jogar.center = (LARGURA_TELA // 2, 350)
+    botao_sair = pygame.Rect(0, 0, 240, 60)
+    botao_sair.center = (LARGURA_TELA // 2, 440)
+
+    while True:
+        relogio.tick(FPS)
+
+        pos_mouse = pygame.mouse.get_pos()
+
+        for evento in pygame.event.get():
+            if evento.type == pygame.QUIT:
+                return False
+            if evento.type == pygame.MOUSEBUTTONDOWN:
+                if botao_jogar.collidepoint(evento.pos):
+                    return True
+                if botao_sair.collidepoint(evento.pos):
+                    return False
+
+        # Cor mais clara quando o mouse esta sobre o botao (efeito hover).
+        cor_jogar = (90, 90, 90) if botao_jogar.collidepoint(pos_mouse) else (50, 50, 50)
+        cor_sair = (90, 90, 90) if botao_sair.collidepoint(pos_mouse) else (50, 50, 50)
+
+        tela.blit(fundo, (0, 0))
+        tela.blit(titulo, rect_titulo)
+        tela.blit(subtitulo, rect_subtitulo)
+
+        pygame.draw.rect(tela, cor_jogar, botao_jogar)
+        pygame.draw.rect(tela, cor_sair, botao_sair)
+
+        # Centraliza o rotulo dentro do retangulo de cada botao.
+        tela.blit(rotulo_jogar, rotulo_jogar.get_rect(center=botao_jogar.center))
+        tela.blit(rotulo_sair, rotulo_sair.get_rect(center=botao_sair.center))
+
+        pygame.display.flip()
+
+
 
 
 def desenhar_barra_vida(superficie, x, y, vidas_atuais, vidas_maximas=3):
@@ -47,18 +102,11 @@ def executar_jogo():
     pygame.display.set_caption(TITULO_JOGO)
 
     relogio = pygame.time.Clock()
-    rodando = True
 
-    # 1. Carregando as imagens recortadas do Spritesheet
+    # --- Recursos que vivem o programa inteiro (carregados uma unica vez) ---
 
     # Jogador: usando tamanho 110x110 para capturar o quadrado perfeitamente
     player_image = pegar_sprite("assets/imagens/millenium_falcon_fr.bmp", x=0, y=0, width=118, height=32, scale=1)
-
-    # Gema pequena: usando tamanho 64x64
-    gem_image    = pegar_sprite(CAMINHO_SPRITES, x=900, y=690, width=200, height=200, scale=0.5)
-
-    # Morcego: usando tamanho 180x120 por causa das asas abertas
-    bat_image    = pegar_sprite(CAMINHO_SPRITES, x=905, y=1060, width=200, height=130, scale=0.5)
 
     # 2. Criando a estrutura de Sprites usando Dicionários
     jogador = {
@@ -66,120 +114,87 @@ def executar_jogo():
         "rect": player_image.get_rect(topleft=(100, 100))
     }
 
-    gema = {
-        "imagem": gem_image,
-        "rect": gem_image.get_rect(topleft=(500, 300))
-    }
-
-    inimigo = {
-        "imagem": bat_image,
-        "rect": bat_image.get_rect(topleft=(200, 500))
-    }
-
-    lista_obstaculos = []
-    contador_tempo = 0
     FREQUENCIA_ASTEROIDE = 40
-
     velocidade = 10
-    pontos = 0
-    vidas = 3
     recorde = carregar_recorde(CAMINHO_RECORDE)
 
     imagem_original = pygame.image.load("assets/imagens/starsky.jpg").convert()
     imagem_original = pygame.transform.scale(imagem_original, (800, 600))
 
-    # Loop principal: processa entrada, atualiza estado e renderiza a cena.
-    while rodando:
-        relogio.tick(FPS)
+    # Loop externo: cada volta e uma nova partida.
+    jogando = True
+    while jogando:
+        # --- Reset: variaveis que vivem apenas uma partida nascem do zero ---
+        lista_obstaculos = []
+        contador_tempo = 0
+        pontos = 0
+        vidas = 3
+        jogador["rect"].topleft = (100, 100)
 
-        for evento in pygame.event.get():
-            if evento.type == pygame.QUIT:
+        # Loop interno (partida): processa entrada, atualiza estado e renderiza.
+        rodando = True
+        while rodando:
+            relogio.tick(FPS)
+
+            for evento in pygame.event.get():
+                if evento.type == pygame.QUIT:
+                    rodando = False
+                    jogando = False
+                if evento.type == pygame.KEYDOWN and evento.key == pygame.K_ESCAPE:
+                    rodando = False
+
+            teclas = pygame.key.get_pressed()
+
+            # Movimentação alterando direto os eixos X e Y do retângulo do jogador
+            if teclas[pygame.K_LEFT]:
+                jogador["rect"].x -= velocidade
+            if teclas[pygame.K_RIGHT]:
+                jogador["rect"].x += velocidade
+            if teclas[pygame.K_UP]:
+                jogador["rect"].y -= velocidade
+            if teclas[pygame.K_DOWN]:
+                jogador["rect"].y += velocidade
+
+            # Limitando o jogador dentro das bordas da tela usando as propriedades do Rect
+            jogador["rect"].x = limitar_valor(jogador["rect"].x, 0, LARGURA_TELA - jogador["rect"].width)
+            jogador["rect"].y = limitar_valor(jogador["rect"].y, 0, ALTURA_TELA - jogador["rect"].height)
+
+            contador_tempo += 1
+            if contador_tempo >= FREQUENCIA_ASTEROIDE:
+                lista_obstaculos.append(Obstacle(LARGURA_TELA))
+                contador_tempo = 0
+
+            for obstaculo in lista_obstaculos[:]:
+                obstaculo.atualizar()
+
+                if verificar_colisao(jogador["rect"], obstaculo.rect):
+                    vidas = tomar_dano(vidas, 1)
+                    lista_obstaculos.remove(obstaculo)
+
+                elif obstaculo.rect.y > ALTURA_TELA:
+                    lista_obstaculos.remove(obstaculo)
+
+            # Regras de fim de jogo e recorde
+            if jogador_perdeu(vidas):
                 rodando = False
-            if evento.type == pygame.KEYDOWN and evento.key == pygame.K_ESCAPE:
-                rodando = False
 
-        teclas = pygame.key.get_pressed()
+            if pontos > recorde:
+                recorde = pontos
+                salvar_recorde(CAMINHO_RECORDE, recorde)
 
-        # Movimentação alterando direto os eixos X e Y do retângulo do jogador
-        # CORRIGIDO: Mudei de 'velocidad' para 'velocidade' para não travar o loop
-        if teclas[pygame.K_LEFT]:
-            jogador["rect"].x -= velocidade
-        if teclas[pygame.K_RIGHT]:
-            jogador["rect"].x += velocidade
-        if teclas[pygame.K_UP]:
-            jogador["rect"].y -= velocidade
-        if teclas[pygame.K_DOWN]:
-            jogador["rect"].y += velocidade
+            tela.blit(imagem_original, (0, 0))
 
-        # Limitando o jogador dentro das bordas da tela usando as propriedades do Rect
-        jogador["rect"].x = limitar_valor(jogador["rect"].x, 0, LARGURA_TELA - jogador["rect"].width)
-        jogador["rect"].y = limitar_valor(jogador["rect"].y, 0, ALTURA_TELA - jogador["rect"].height)
+            tela.blit(jogador["imagem"], jogador["rect"])
 
-        contador_tempo += 1
-        if contador_tempo >= FREQUENCIA_ASTEROIDE:
-            lista_obstaculos.append(Obstacle(LARGURA_TELA))
-            contador_tempo = 0
+            for obstaculo in lista_obstaculos:
+                obstaculo.desenhar(tela)
 
-        for obstaculo in lista_obstaculos[:]:
-            obstaculo.atualizar()
+            desenhar_barra_vida(tela, 20, 20, vidas, vidas_maximas=3)
 
-            if verificar_colisao(jogador["rect"], obstaculo.rect):
-                vidas = tomar_dano(vidas, 1)
-                lista_obstaculos.remove(obstaculo)
+            pygame.display.flip()
 
-            elif obstaculo.rect.y > ALTURA_TELA:
-                lista_obstaculos.remove(obstaculo)
-
-        # Verificação de colisão com a Gema (antigo 'item')
-        if verificar_colisao(jogador["rect"], gema["rect"]):
-            pontos = calcular_pontos(pontos, 10)
-
-            # Move a gema de lugar ao coletar
-            gema["rect"].x += 80
-            gema["rect"].y += 50
-
-            # Se a gema sair da tela, volta para uma posição segura
-            if gema["rect"].x > LARGURA_TELA - gema["rect"].width:
-                gema["rect"].x = 50
-            if gema["rect"].y > ALTURA_TELA - gema["rect"].height:
-                gema["rect"].y = 50
-
-        # Verificação de colisão com o Inimigo
-        if verificar_colisao(jogador["rect"], inimigo["rect"]):
-            vidas = tomar_dano(vidas, 1)
-
-            # Afasta o inimigo ao colidir
-            inimigo["rect"].x += 80
-            inimigo["rect"].y += 50
-
-            if inimigo["rect"].x > LARGURA_TELA - inimigo["rect"].width:
-                inimigo["rect"].x = 50
-            if inimigo["rect"].y > ALTURA_TELA - inimigo["rect"].height:
-                inimigo["rect"].y = 50
-
-        # Regras de fim de jogo e recorde
-        if jogador_perdeu(vidas):
-            rodando = False
-
-        if pontos > recorde:
-            recorde = pontos
-            salvar_recorde(CAMINHO_RECORDE, recorde)
-
-        tela.blit(imagem_original, (0, 0))
-
-        tela.blit(gema["imagem"], gema["rect"])
-        tela.blit(inimigo["imagem"], inimigo["rect"])
-        tela.blit(jogador["imagem"], jogador["rect"])
-
-        for obstaculo in lista_obstaculos:
-            obstaculo.desenhar(tela)
-
-        desenhar_barra_vida(tela, 20, 20, vidas, vidas_maximas=3)
-
-        pygame.display.set_caption(
-            f"{TITULO_JOGO} | Pontos: {pontos} | Recorde: {recorde} | Vidas: {vidas}"
-        )
-
-        pygame.display.flip()
+        # A partida acabou. Se o jogador nao fechou a janela, mostra a tela de fim.
+        if jogando:
+            jogando = tela_fim_jogo(tela, imagem_original, relogio)
 
     pygame.quit()
