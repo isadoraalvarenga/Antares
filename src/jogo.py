@@ -10,7 +10,6 @@ from src.config import (
 )
 
 from src.funcoes import (
-    calcular_pontos,
     jogador_perdeu,
     limitar_valor,
     verificar_colisao,
