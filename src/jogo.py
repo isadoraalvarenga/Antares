@@ -10,6 +10,7 @@ from src.config import (
     FONTE,
     RED_ANTARES,
     BRANCO,
+    CAMINHO_SPRITES
 )
 
 from src.funcoes import (
@@ -108,6 +109,9 @@ def executar_jogo():
     # Jogador: usando tamanho 110x110 para capturar o quadrado perfeitamente
     player_image = pegar_sprite("assets/imagens/millenium_falcon_fr.bmp", x=0, y=0, width=118, height=32, scale=1)
 
+    # Ferramenta de Reparo
+    ferramenta_image = pegar_sprite(CAMINHO_SPRITES, x=900, y=690, width=200, height=200, scale=0.15)
+
     # 2. Criando a estrutura de Sprites usando Dicionários
     jogador = {
         "imagem": player_image,
@@ -130,6 +134,11 @@ def executar_jogo():
         pontos = 0
         vidas = 3
         jogador["rect"].topleft = (100, 100)
+
+        ferramenta_na_tela = False
+        ferramenta_rect = pygame.Rect(0, 0, 0, 0)
+        ferramenta_velocidade = 5
+        chances_perdidas = 0
 
         # Loop interno (partida): processa entrada, atualiza estado e renderiza.
         rodando = True
@@ -164,6 +173,24 @@ def executar_jogo():
                 lista_obstaculos.append(Obstacle(LARGURA_TELA))
                 contador_tempo = 0
 
+            if vidas <= 1.0 and not ferramenta_na_tela:  # <--- MUDE DE 30 PARA 1.0 AQUI
+                if random.random() < 0.005:
+                    ferramenta_rect = ferramenta_image.get_rect()
+                    ferramenta_rect.x = random.randint(0, LARGURA_TELA - ferramenta_rect.width)
+                    ferramenta_rect.y = -ferramenta_rect.height
+                    ferramenta_na_tela = True
+
+            if ferramenta_na_tela:
+                ferramenta_rect.y += ferramenta_velocidade
+                
+                if verificar_colisao(jogador["rect"], ferramenta_rect):
+                    vidas = limitar_valor(vidas + 0.20, 0, 3.0)  
+                    ferramenta_na_tela = False
+                
+                elif ferramenta_rect.y > ALTURA_TELA:
+                    ferramenta_na_tela = False
+                    vidas = tomar_dano(vidas, 0.03)
+
             for obstaculo in lista_obstaculos[:]:
                 obstaculo.atualizar()
 
@@ -186,6 +213,9 @@ def executar_jogo():
 
             tela.blit(jogador["imagem"], jogador["rect"])
 
+            if ferramenta_na_tela:
+                tela.blit(ferramenta_image, ferramenta_rect)
+                          
             for obstaculo in lista_obstaculos:
                 obstaculo.desenhar(tela)
 
@@ -198,3 +228,6 @@ def executar_jogo():
             jogando = tela_fim_jogo(tela, imagem_original, relogio)
 
     pygame.quit()
+
+if __name__ == "__main__":
+    executar_jogo()
