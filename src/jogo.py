@@ -119,7 +119,11 @@ def executar_jogo():
     }
 
     FREQUENCIA_ASTEROIDE = 40
+
     velocidade = 10
+    fundo_x = 0
+    velocidade_fundo = 5
+
     recorde = carregar_recorde(CAMINHO_RECORDE)
 
     imagem_original = pygame.image.load("assets/imagens/starsky.jpg").convert()
@@ -151,6 +155,11 @@ def executar_jogo():
                     jogando = False
                 if evento.type == pygame.KEYDOWN and evento.key == pygame.K_ESCAPE:
                     rodando = False
+
+            
+            fundo_x -= velocidade_fundo
+            if fundo_x <= -LARGURA_TELA:
+                fundo_x = 0
 
             teclas = pygame.key.get_pressed()
 
@@ -209,7 +218,8 @@ def executar_jogo():
                 recorde = pontos
                 salvar_recorde(CAMINHO_RECORDE, recorde)
 
-            tela.blit(imagem_original, (0, 0))
+            tela.blit(imagem_original, (fundo_x, 0))
+            tela.blit(imagem_original, (fundo_x + LARGURA_TELA, 0))
 
             tela.blit(jogador["imagem"], jogador["rect"])
 
