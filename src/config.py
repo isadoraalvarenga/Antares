@@ -1,6 +1,6 @@
 # Configurações centrais do jogo (tela, cores e caminhos de arquivos).
-LARGURA_TELA = 800
-ALTURA_TELA = 600
+LARGURA_TELA = 1280
+ALTURA_TELA = 720
 FPS = 60
 
 TITULO_JOGO = "Antares"

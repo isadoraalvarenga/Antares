@@ -99,7 +99,10 @@ def executar_jogo():
     """Executa o loop principal do jogo e controla estado, colisões e pontuação."""
     pygame.init()
 
-    tela = pygame.display.set_mode((LARGURA_TELA, ALTURA_TELA))
+    tela = pygame.display.set_mode(
+        (LARGURA_TELA, ALTURA_TELA),
+        pygame.SCALED | pygame.FULLSCREEN
+    )
     pygame.display.set_caption(TITULO_JOGO)
 
     relogio = pygame.time.Clock()
@@ -127,7 +130,7 @@ def executar_jogo():
     recorde = carregar_recorde(CAMINHO_RECORDE)
 
     imagem_original = pygame.image.load("assets/imagens/starsky.jpg").convert()
-    imagem_original = pygame.transform.scale(imagem_original, (800, 600))
+    imagem_original = pygame.transform.scale(imagem_original, (LARGURA_TELA, ALTURA_TELA))
 
     # Loop externo: cada volta e uma nova partida.
     jogando = True
