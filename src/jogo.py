@@ -32,20 +32,25 @@ def tela_fim_jogo(tela, fundo, relogio):
     fonte_subtitulo = pygame.font.Font(FONTE, 50)
     fonte_botao = pygame.font.Font(FONTE, 30)
 
+    # Tudo e posicionado a partir do centro da tela, para se adaptar a qualquer
+    # resolucao em vez de ficar preso no topo.
+    centro_x = LARGURA_TELA // 2
+    centro_y = ALTURA_TELA // 2
+
     titulo = fonte_titulo.render("Antares", True, RED_ANTARES)
-    rect_titulo = titulo.get_rect(center=(LARGURA_TELA // 2, 120))
+    rect_titulo = titulo.get_rect(center=(centro_x, centro_y - 180))
 
     subtitulo = fonte_subtitulo.render("Game over", True, RED_ANTARES)
-    rect_subtitulo = subtitulo.get_rect(center=(LARGURA_TELA // 2, 200))
+    rect_subtitulo = subtitulo.get_rect(center=(centro_x, centro_y - 100))
 
     rotulo_jogar = fonte_botao.render("Jogar", True, BRANCO)
     rotulo_sair = fonte_botao.render("Sair", True, BRANCO)
 
     # Areas dos botoes (servem para desenhar e para detectar o clique).
     botao_jogar = pygame.Rect(0, 0, 240, 60)
-    botao_jogar.center = (LARGURA_TELA // 2, 350)
+    botao_jogar.center = (centro_x, centro_y + 30)
     botao_sair = pygame.Rect(0, 0, 240, 60)
-    botao_sair.center = (LARGURA_TELA // 2, 440)
+    botao_sair.center = (centro_x, centro_y + 120)
 
     while True:
         relogio.tick(FPS)
@@ -101,7 +106,7 @@ def executar_jogo():
 
     tela = pygame.display.set_mode(
         (LARGURA_TELA, ALTURA_TELA),
-        pygame.SCALED | pygame.FULLSCREEN
+        pygame.FULLSCREEN
     )
     pygame.display.set_caption(TITULO_JOGO)
 

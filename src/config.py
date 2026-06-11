@@ -1,6 +1,14 @@
 # Configurações centrais do jogo (tela, cores e caminhos de arquivos).
-LARGURA_TELA = 1280
-ALTURA_TELA = 720
+import pygame
+
+# Resolução dinâmica: usa o tamanho real do monitor (sem barras pretas em
+# nenhuma proporção). Precisamos inicializar só o subsistema de vídeo para
+# conseguir consultar a resolução do desktop antes de criar a janela.
+pygame.display.init()
+_info = pygame.display.Info()
+LARGURA_TELA = _info.current_w
+ALTURA_TELA = _info.current_h
+
 FPS = 60
 
 TITULO_JOGO = "Antares"
