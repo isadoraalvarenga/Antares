@@ -170,24 +170,24 @@ def executar_jogo():
 
             contador_tempo += 1
             if contador_tempo >= FREQUENCIA_ASTEROIDE:
-                lista_obstaculos.append(Obstacle(LARGURA_TELA))
+                lista_obstaculos.append(Obstacle(LARGURA_TELA, ALTURA_TELA))
                 contador_tempo = 0
 
-            if vidas <= 1.0 and not ferramenta_na_tela:  # <--- MUDE DE 30 PARA 1.0 AQUI
+            if vidas <= 1.0 and not ferramenta_na_tela:
                 if random.random() < 0.005:
                     ferramenta_rect = ferramenta_image.get_rect()
-                    ferramenta_rect.x = random.randint(0, LARGURA_TELA - ferramenta_rect.width)
-                    ferramenta_rect.y = -ferramenta_rect.height
+                    ferramenta_rect.x = LARGURA_TELA 
+                    ferramenta_rect.y = random.randint(0, ALTURA_TELA - ferramenta_rect.height)
                     ferramenta_na_tela = True
 
             if ferramenta_na_tela:
-                ferramenta_rect.y += ferramenta_velocidade
+                ferramenta_rect.x -= ferramenta_velocidade
                 
                 if verificar_colisao(jogador["rect"], ferramenta_rect):
                     vidas = limitar_valor(vidas + 0.20, 0, 3.0)  
                     ferramenta_na_tela = False
                 
-                elif ferramenta_rect.y > ALTURA_TELA:
+                elif ferramenta_rect.x < -ferramenta_rect.width:
                     ferramenta_na_tela = False
                     vidas = tomar_dano(vidas, 0.03)
 
