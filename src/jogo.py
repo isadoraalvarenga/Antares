@@ -284,7 +284,18 @@ def executar_jogo():
                     rodando = False
                     fase_atual = 1 
                 else:
-                    rodando = False
+                    regras_fase = CONFIG_FASES[fase_atual]
+                    enemies_restantes_para_nascer = regras_fase["total_enemies"]
+                    total_enemies_da_fase = regras_fase["total_enemies"]
+                    intervalo_spawn = regras_fase["intervalo_spawn"] * 1000
+                    velocidade_enemy = regras_fase["vel_enemy"]
+
+                    lista_enemies.clear()
+                    lista_lasers_enemies.clear()
+                    lista_obstaculos.clear()
+
+                    enemies_mortos = 0
+                    ultimo_spawn_enemy = pygame.time.get_ticks()
 
             contador_tempo += 1
             if contador_tempo >= FREQUENCIA_ASTEROIDE:
