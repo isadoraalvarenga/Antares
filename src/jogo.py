@@ -122,7 +122,7 @@ def executar_jogo():
     # 2. Criando a estrutura de Sprites usando Dicionários
     jogador = {
         "imagem": player_image,
-        "rect": player_image.get_rect(topleft=(100, 100))
+        "rect": player_image.get_rect()
     }
 
     FREQUENCIA_ASTEROIDE = 40
@@ -146,8 +146,11 @@ def executar_jogo():
         vidas = 3
         vidas_death_star = 5
         death_star = None
-        jogador["rect"].topleft = (100, 100)
-
+        destino_x = 20
+        velocidade_entrada = 3
+        jogador["rect"].y = (ALTURA_TELA - jogador["rect"].height) / 2
+        jogador["rect"].x = -jogador["rect"].width - 5
+        entrando = True
         ferramenta_na_tela = False
         ferramenta_rect = pygame.Rect(0, 0, 0, 0)
         ferramenta_velocidade = 5
@@ -166,26 +169,33 @@ def executar_jogo():
                 if evento.type == pygame.KEYDOWN and evento.key == pygame.K_ESCAPE:
                     rodando = False
 
-            
+
             fundo_x -= velocidade_fundo
             if fundo_x <= -LARGURA_TELA:
                 fundo_x = 0
 
-            teclas = pygame.key.get_pressed()
+            if entrando:
+                # Fase de entrada: desliza para a direita, sem teclado nem clamp
+                jogador["rect"].x += velocidade_entrada
+                if jogador["rect"].x >= destino_x:
+                    jogador["rect"].x = destino_x
+                    entrando = False
+            else:
+                teclas = pygame.key.get_pressed()
 
-            # Movimentação alterando direto os eixos X e Y do retângulo do jogador
-            if teclas[pygame.K_LEFT]:
-                jogador["rect"].x -= velocidade
-            if teclas[pygame.K_RIGHT]:
-                jogador["rect"].x += velocidade
-            if teclas[pygame.K_UP]:
-                jogador["rect"].y -= velocidade
-            if teclas[pygame.K_DOWN]:
-                jogador["rect"].y += velocidade
+                # Movimentação alterando direto os eixos X e Y do retângulo do jogador
+                if teclas[pygame.K_LEFT]:
+                    jogador["rect"].x -= velocidade
+                if teclas[pygame.K_RIGHT]:
+                    jogador["rect"].x += velocidade
+                if teclas[pygame.K_UP]:
+                    jogador["rect"].y -= velocidade
+                if teclas[pygame.K_DOWN]:
+                    jogador["rect"].y += velocidade
 
-            # Limitando o jogador dentro das bordas da tela usando as propriedades do Rect
-            jogador["rect"].x = limitar_valor(jogador["rect"].x, 0, LARGURA_TELA - jogador["rect"].width)
-            jogador["rect"].y = limitar_valor(jogador["rect"].y, 0, ALTURA_TELA - jogador["rect"].height)
+                # Limitando o jogador dentro das bordas da tela usando as propriedades do Rect
+                jogador["rect"].x = limitar_valor(jogador["rect"].x, 0, LARGURA_TELA - jogador["rect"].width)
+                jogador["rect"].y = limitar_valor(jogador["rect"].y, 0, ALTURA_TELA - jogador["rect"].height)
 
             contador_tempo += 1
             if contador_tempo >= FREQUENCIA_ASTEROIDE:
