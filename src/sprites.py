@@ -80,7 +80,7 @@ class Enemies:
             self.image = pygame.image.load("assets/imagens/tie_fighter").convert_alpha
             self.image = pygame.transform.scale(self.image, (50, 50))
         except Exception:
-            
+            print("Aviso: Nao foi possivel carregar assets/imagens/tie_fighter.png")
             self.image = pygame.Surface((40, 40))
             self.image.fill((255, 0, 0))
 

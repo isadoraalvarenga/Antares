@@ -353,6 +353,20 @@ def executar_jogo():
 
             desenhar_barra_vida(tela, 20, 20, vidas, vidas_maximas=100)
 
+            fonte_hud = pygame.font.Font(FONTE, 24)
+
+            texto_fase = fonte_hud.render(f"FASE {fase_atual}", True, BRANCO)
+            rect_fase = texto_fase.get_rect()
+           
+            rect_fase.topright = (LARGURA_TELA - 20, 20)
+            tela.blit(texto_fase, rect_fase)
+            
+            texto_alvo = fonte_hud.render(f"ALVOS: {enemies_mortos}/{total_enemies_da_fase}", True, BRANCO)
+            rect_alvo = texto_alvo.get_rect()
+            
+            rect_alvo.topright = (LARGURA_TELA - 20, rect_fase.bottom + 5)
+            tela.blit(texto_alvo, rect_alvo)
+
             pygame.display.flip()
 
         # A partida acabou. Se o jogador nao fechou a janela, mostra a tela de fim.
