@@ -73,4 +73,25 @@ class Obstacle:
         # Desenha o obstáculo na tela
         tela.blit(self.image, self.rect)
 
-    
+class Enemies:
+    def __init__(self, largura_tela, altura_tela, velocidade):
+        
+        try:
+            self.image = pegar_sprite("assets/imagens/spritesheet.bmp", x=200, y=0, width=50, height=50, scale=1.2)
+        except Exception:
+            
+            self.image = pygame.Surface((40, 40))
+            self.image.fill((255, 0, 0))
+
+        self.rect = self.image.get_rect()
+        self.rect.x = largura_tela
+        
+        self.rect.y = random.randint(50, altura_tela - 100)
+        self.velocidade = velocidade
+        self.vida = 1 
+
+    def atualizar(self):
+        self.rect.x -= self.velocidade
+
+    def desenhar(self, tela):
+        tela.blit(self.image, self.rect)
