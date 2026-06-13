@@ -115,6 +115,19 @@ def tela_loading(tela, fase_atual, relogio):
     
     pygame.time.wait(2000)
 
+def tela_fase_cinema(tela, fase_atual):
+    fonte_grande = pygame.font.Font(FONTE, 80)
+    
+    tela.fill(PRETO)
+    
+    txt_fase = fonte_grande.render(f"FASE {fase_atual}", True, RED_ANTARES)
+    rect_fase = txt_fase.get_rect(center=(LARGURA_TELA // 2, ALTURA_TELA // 2))
+    
+    tela.blit(txt_fase, rect_fase)
+    pygame.display.flip()
+    
+    pygame.time.wait(1500)
+
 def executar_jogo():
     """Executa o loop principal do jogo e controla estado, colisões e pontuação."""
     pygame.init()
@@ -284,6 +297,8 @@ def executar_jogo():
                     rodando = False
                     fase_atual = 1 
                 else:
+                    tela_fase_cinema(tela, fase_atual)
+
                     regras_fase = CONFIG_FASES[fase_atual]
                     enemies_restantes_para_nascer = regras_fase["total_enemies"]
                     total_enemies_da_fase = regras_fase["total_enemies"]
@@ -296,6 +311,7 @@ def executar_jogo():
 
                     enemies_mortos = 0
                     ultimo_spawn_enemy = pygame.time.get_ticks()
+                    ferramenta_coletada_na_fase = False
 
             contador_tempo += 1
             if contador_tempo >= FREQUENCIA_ASTEROIDE:
