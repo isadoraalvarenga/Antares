@@ -20,11 +20,14 @@ from src.funcoes import (
     tomar_dano,
     verificar_vida_baixa
 )
-from src.sprites import pegar_sprite, Obstacle
+
 from src.dados import (
     salvar_recorde,
     carregar_recorde,
 )
+
+from src.sprites import pegar_sprite, Obstacle, Bullet
+
 
 def tela_fim_jogo(tela, fundo, relogio):
     """Mostra a tela de fim de jogo. Retorna True para reiniciar, False para sair."""
@@ -154,6 +157,8 @@ def executar_jogo():
         ferramenta_rect = pygame.Rect(0, 0, 0, 0)
         ferramenta_velocidade = 5
         chances_perdidas = 0
+        lista_balas = []
+        cooldown_tiro = 0
 
         # Loop interno (partida): processa entrada, atualiza estado e renderiza.
         rodando = True
@@ -187,6 +192,26 @@ def executar_jogo():
             # Limitando o jogador dentro das bordas da tela usando as propriedades do Rect
             jogador["rect"].x = limitar_valor(jogador["rect"].x, 0, LARGURA_TELA - jogador["rect"].width)
             jogador["rect"].y = limitar_valor(jogador["rect"].y, 0, ALTURA_TELA - jogador["rect"].height)
+
+            # Tiro
+            cooldown_tiro = max(0, cooldown_tiro - 1)
+            if teclas[pygame.K_SPACE] and cooldown_tiro == 0:
+                lista_balas.append(Bullet(jogador["rect"].right, jogador["rect"].centery))
+                cooldown_tiro = 10
+
+            # Atualizar balas e colisão com asteroides
+            for bala in lista_balas[:]:
+                bala.atualizar()
+
+                if bala.rect.x > LARGURA_TELA:
+                    lista_balas.remove(bala)
+                    continue
+
+                for obstaculo in lista_obstaculos[:]:
+                    if verificar_colisao(bala.rect, obstaculo.rect):
+                        lista_balas.remove(bala)
+                        lista_obstaculos.remove(obstaculo)
+                        break
 
             contador_tempo += 1
             if contador_tempo >= FREQUENCIA_ASTEROIDE:
@@ -237,6 +262,8 @@ def executar_jogo():
             tela.blit(imagem_original, (fundo_x + LARGURA_TELA, 0))
 
             tela.blit(jogador["imagem"], jogador["rect"])
+            for bala in lista_balas:
+                bala.desenhar(tela)
 
             if ferramenta_na_tela:
                 tela.blit(ferramenta_image, ferramenta_rect)
@@ -252,6 +279,13 @@ def executar_jogo():
         if jogando:
             jogando = tela_fim_jogo(tela, imagem_original, relogio)
 
+    
+    
+    
+    
+    
+    
+    
     pygame.quit()
 
 if __name__ == "__main__":
