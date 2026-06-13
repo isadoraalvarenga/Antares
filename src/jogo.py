@@ -86,8 +86,7 @@ def tela_fim_jogo(tela, fundo, relogio):
 
 
 
-def desenhar_barra_vida(superficie, x, y, vidas_atuais, vidas_maximas=3):
-    comprimento_barra = 150
+def desenhar_barra_vida(superficie, x, y, vidas_atuais, vidas_maximas=3, comprimento_barra = 150, cor_vida = (0, 255, 0), cor_fundo = (255, 0, 0)):
     altura_barra = 15
     proporcao = max(0, vidas_atuais) / vidas_maximas
     largura_vida = int(comprimento_barra * proporcao)
@@ -95,9 +94,9 @@ def desenhar_barra_vida(superficie, x, y, vidas_atuais, vidas_maximas=3):
     rect_fundo = pygame.Rect(x, y, comprimento_barra, altura_barra)
     rect_vida = pygame.Rect(x, y, largura_vida, altura_barra)
     
-    pygame.draw.rect(superficie, (255, 0, 0), rect_fundo)
-    pygame.draw.rect(superficie, (0, 255, 0), rect_vida)
-    pygame.draw.rect(superficie, (255, 255, 255), rect_fundo, 2)
+    pygame.draw.rect(superficie, cor_fundo, rect_fundo)
+    pygame.draw.rect(superficie, cor_vida, rect_vida)
+    pygame.draw.rect(superficie, cor_fundo, rect_fundo, 2)
 
 
 def executar_jogo():
@@ -145,6 +144,7 @@ def executar_jogo():
         contador_tempo = 0
         pontos = 0
         vidas = 3
+        vidas_death_star = 5
         death_star = None
         jogador["rect"].topleft = (100, 100)
 
@@ -192,8 +192,9 @@ def executar_jogo():
                 lista_obstaculos.append(Obstacle(LARGURA_TELA, ALTURA_TELA))
                 contador_tempo = 0
 
-            if agora >= 10000 and death_star is None:
+            if agora >= 2000 and death_star is None:
                 death_star = DeathStar(LARGURA_TELA, ALTURA_TELA)
+                
 
             if death_star is not None:
                 death_star.atualizar()
@@ -247,6 +248,7 @@ def executar_jogo():
 
             if death_star is not None:
                 death_star.desenhar(tela)
+                desenhar_barra_vida(tela, 10, ALTURA_TELA - 35, vidas_death_star, 5, LARGURA_TELA - 20, (255, 0, 0), (0, 0, 0))
 
             desenhar_barra_vida(tela, 20, 20, vidas, vidas_maximas=3)
 
