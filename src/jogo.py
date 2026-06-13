@@ -18,16 +18,81 @@ from src.funcoes import (
     limitar_valor,
     verificar_colisao,
     tomar_dano,
+<<<<<<< HEAD
     verificar_vida_baixa
 )
 
+=======
+    tela_reparo
+)
+
+from src.sprites import pegar_sprite, Obstacle 
+>>>>>>> 6c4b8c9 (feat: adiciona tela de reparos com perguntas)
 from src.dados import (
     salvar_recorde,
     carregar_recorde,
 )
 
+<<<<<<< HEAD
 from src.sprites import pegar_sprite, Obstacle, Bullet
 
+=======
+# Banco de dados das perguntas
+
+perguntas = [
+    {
+        "pergunta": "O que armazena uma Matriz de tamanho 3x3?",
+        "opcoes": ["3 elementos", "6 elementos", "9 elementos", "0 elementos"],
+        "correta": 2
+    },
+    {
+        "pergunta": "O que acontece se tentarmos ler a posição 5 de um vetor de tamanho 3?",
+        "opcoes": ["Ele aumenta de tamanho sozinho", "Dá erro de índice fora do limite", "O programa adivinha o valor", "Ele apaga o vetor"],
+        "correta": 1
+    },
+    {
+        "pergunta": "Qual comando usamos para repetir um bloco de código enquanto uma condição for verdadeira?",
+        "opcoes": ["if", "while", "else", "print"],
+        "correta": 1
+    },
+    {
+        "pergunta": "Para que serve o comando 'if' no Python?",
+        "opcoes": ["Para repetir o código", "Para criar uma lista", "Para fazer uma pergunta/teste condicional", "Para fechar o jogo"],
+        "correta": 2
+    },
+    {
+        "pergunta": "Se o comando 'if' não for atendido, qual comando opcional roda logo em seguida?",
+        "opcoes": ["else", "while", "for", "import"],
+        "correta": 0
+    },
+    {
+        "pergunta": "Qual das opções abaixo é usada para criar uma lista vazia?",
+        "opcoes": ["lista = 0", "lista = []", "lista = 'vazia'", "lista = True"],
+        "correta": 1
+    },
+    {
+        "pergunta": "O que acontece se você criar um loop 'while True' sem nenhum comando para pará-lo?",
+        "opcoes": ["O computador desliga", "O loop roda apenas uma vez", "Gera um loop infinito e trava o programa", "O Python corrige sozinho"],
+        "correta": 2
+    },
+    {
+        "pergunta": "Qual estrutura é ideal para percorrer todos os elementos de uma lista um por um?",
+        "opcoes": ["import", "if", "else", "for"],
+        "correta": 3
+    },
+    {
+        "pergunta": "O que o comando 'print()' faz no Python?",
+        "opcoes": ["Exibe uma mensagem na tela/terminal", "Soma dois números", "Salva o jogo", "Deleta um arquivo"],
+        "correta": 0
+    },
+    {
+        "pergunta": "Qual o valor da variável 'x' após rodar: x = 5 + 3?",
+        "opcoes": ["5", "3", "53", "8"],
+        "correta": 3
+    }
+
+]
+>>>>>>> 6c4b8c9 (feat: adiciona tela de reparos com perguntas)
 
 def tela_fim_jogo(tela, fundo, relogio):
     """Mostra a tela de fim de jogo. Retorna True para reiniciar, False para sair."""
@@ -88,8 +153,6 @@ def tela_fim_jogo(tela, fundo, relogio):
         pygame.display.flip()
 
 
-
-
 def desenhar_barra_vida(superficie, x, y, vidas_atuais, vidas_maximas=3):
     comprimento_barra = 150
     altura_barra = 15
@@ -148,17 +211,26 @@ def executar_jogo():
         lista_obstaculos = []
         contador_tempo = 0
         pontos = 0
+<<<<<<< HEAD
         vidas = 100.0
         ferramenta_coletada_na_fase = False
+=======
+        vidas = 3.0
+>>>>>>> 6c4b8c9 (feat: adiciona tela de reparos com perguntas)
         jogador["rect"].topleft = (100, 100)
 
 
         ferramenta_na_tela = False
         ferramenta_rect = pygame.Rect(0, 0, 0, 0)
         ferramenta_velocidade = 5
+<<<<<<< HEAD
         chances_perdidas = 0
         lista_balas = []
         cooldown_tiro = 0
+=======
+
+        perguntas_da_partida = list(perguntas)
+>>>>>>> 6c4b8c9 (feat: adiciona tela de reparos com perguntas)
 
         # Loop interno (partida): processa entrada, atualiza estado e renderiza.
         rodando = True
@@ -228,11 +300,41 @@ def executar_jogo():
             if ferramenta_na_tela:
                 ferramenta_rect.x -= ferramenta_velocidade
                 
+                # Se o jogador pegar a ferramenta de reparo
                 if verificar_colisao(jogador["rect"], ferramenta_rect):
+<<<<<<< HEAD
                     vidas = limitar_valor(vidas + 20.0, 0, 100.0)
                     ferramenta_coletada_na_fase = True
+=======
+>>>>>>> 6c4b8c9 (feat: adiciona tela de reparos com perguntas)
                     ferramenta_na_tela = False
+                    
+                    # 1. Desenha tudo na tela rapidamente para capturar a imagem de fundo
+                    tela.blit(imagem_original, (0, 0))
+                    tela.blit(jogador["imagem"], jogador["rect"])
+                    for obs in lista_obstaculos:
+                        obs.desenhar(tela)
+                    desenhar_barra_vida(tela, 20, 20, vidas, vidas_maximas=3)
+                    
+                    # Tira um print da tela do jogo para congelar no fundo do quiz
+                    print_jogo = tela.copy()
+                    
+                    # 2. Abre a janela do quiz passando todas as configurações necessárias
+                    acertou, questao_respondida = tela_reparo(
+                        tela, relogio, perguntas_da_partida, print_jogo,
+                        LARGURA_TELA, ALTURA_TELA, FPS, FONTE, BRANCO
+                    )
+                    
+                    # 3. Aplica as regras do resultado do quiz
+                    if acertou:
+                        vidas = limitar_valor(vidas + 1.0, 0, 3.0) # Ganha 20% de uma vida
+                        if questao_respondida in perguntas_da_partida:
+                            perguntas_da_partida.remove(questao_respondida) # Remove para não repetir
+                    else:
+                        # Se errou, não ganha vida e a pergunta continua na lista (pode repetir)
+                        pass
                 
+                # Se a ferramenta passar direto sem ser coletada, causa dano de 3%
                 elif ferramenta_rect.x < -ferramenta_rect.width:
                     ferramenta_na_tela = False
                     chances_perdidas += 1
@@ -249,6 +351,7 @@ def executar_jogo():
 
                 elif obstaculo.rect.y > ALTURA_TELA:
                     lista_obstaculos.remove(obstaculo)
+                    pontos += 1
 
             if jogador_perdeu(vidas):
                  
