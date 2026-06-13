@@ -95,3 +95,17 @@ class Enemies:
 
     def desenhar(self, tela):
         tela.blit(self.image, self.rect)
+
+class LaserEnemies:
+    def __init__(self, x, y):
+        self.image = pygame.Surface((12, 4))
+        self.image.fill((255, 50, 50)) # Laser vermelho clássico do Império
+        self.rect = self.image.get_rect()
+        self.rect.center = (x, y)
+        self.velocidade = 10
+
+    def atualizar(self):
+        self.rect.x -= self.velocidade
+
+    def desenhar(self, tela):
+        tela.blit(self.image, self.rect)
