@@ -90,8 +90,12 @@ class Enemies:
         self.velocidade = velocidade
         self.vida = 1 
 
-    def atualizar(self):
+    def atualizar(self, lista_lasers_enemies):
         self.rect.x -= self.velocidade
+
+        if random.random() < 0.01:
+            novo_laser = LaserEnemies(self.rect.left, self.rect.centery)
+            lista_lasers_enemies.append(novo_laser)
 
     def desenhar(self, tela):
         tela.blit(self.image, self.rect)
