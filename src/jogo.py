@@ -19,7 +19,7 @@ from src.funcoes import (
     verificar_colisao,
     tomar_dano,
 )
-from src.sprites import pegar_sprite, Obstacle
+from src.sprites import pegar_sprite, Obstacle, DeathStar
 from src.dados import (
     salvar_recorde,
     carregar_recorde,
@@ -145,6 +145,7 @@ def executar_jogo():
         contador_tempo = 0
         pontos = 0
         vidas = 3
+        death_star = None
         jogador["rect"].topleft = (100, 100)
 
         ferramenta_na_tela = False
@@ -156,6 +157,7 @@ def executar_jogo():
         rodando = True
         while rodando:
             relogio.tick(FPS)
+            agora = pygame.time.get_ticks()
 
             for evento in pygame.event.get():
                 if evento.type == pygame.QUIT:
@@ -189,6 +191,12 @@ def executar_jogo():
             if contador_tempo >= FREQUENCIA_ASTEROIDE:
                 lista_obstaculos.append(Obstacle(LARGURA_TELA, ALTURA_TELA))
                 contador_tempo = 0
+
+            if agora >= 10000 and death_star is None:
+                death_star = DeathStar(LARGURA_TELA, ALTURA_TELA)
+
+            if death_star is not None:
+                death_star.atualizar()
 
             if vidas <= 1.0 and not ferramenta_na_tela:
                 if random.random() < 0.005:
@@ -236,6 +244,9 @@ def executar_jogo():
                           
             for obstaculo in lista_obstaculos:
                 obstaculo.desenhar(tela)
+
+            if death_star is not None:
+                death_star.desenhar(tela)
 
             desenhar_barra_vida(tela, 20, 20, vidas, vidas_maximas=3)
 
