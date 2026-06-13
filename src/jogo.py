@@ -86,7 +86,7 @@ def tela_fim_jogo(tela, fundo, relogio):
 
 
 
-def desenhar_barra_vida(superficie, x, y, vidas_atuais, vidas_maximas=3, comprimento_barra = 150, cor_vida = (0, 255, 0), cor_fundo = (255, 0, 0)):
+def desenhar_barra_vida(superficie, x, y, vidas_atuais, vidas_maximas=3, comprimento_barra = 150, cor_vida = (0, 255, 0), cor_fundo = (255, 0, 0), cor_outline = (255, 255, 255)):
     altura_barra = 15
     proporcao = max(0, vidas_atuais) / vidas_maximas
     largura_vida = int(comprimento_barra * proporcao)
@@ -96,7 +96,7 @@ def desenhar_barra_vida(superficie, x, y, vidas_atuais, vidas_maximas=3, comprim
     
     pygame.draw.rect(superficie, cor_fundo, rect_fundo)
     pygame.draw.rect(superficie, cor_vida, rect_vida)
-    pygame.draw.rect(superficie, cor_fundo, rect_fundo, 2)
+    pygame.draw.rect(superficie, cor_outline, rect_fundo, 2)
 
 
 def executar_jogo():
@@ -248,7 +248,7 @@ def executar_jogo():
 
             if death_star is not None:
                 death_star.desenhar(tela)
-                desenhar_barra_vida(tela, 10, ALTURA_TELA - 35, vidas_death_star, 5, LARGURA_TELA - 20, (255, 0, 0), (0, 0, 0))
+                desenhar_barra_vida(tela, 10, ALTURA_TELA - 35, vidas_death_star, 5, LARGURA_TELA - 20, (255, 0, 0), (0, 0, 0), (118, 50, 1))
 
             desenhar_barra_vida(tela, 20, 20, vidas, vidas_maximas=3)
 
