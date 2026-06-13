@@ -174,8 +174,11 @@ def executar_jogo():
 
         regras_fase = CONFIG_FASES[fase_atual]
         enemies_restantes_para_nascer = regras_fase["total_enemies"]
+        total_enemies_da_fase = regras_fase["total_enemies"]
         intervalo_spawn = regras_fase["intervalo_spawn"] * 1000
         velocidade_enemy = regras_fase["vel_enemy"]
+
+        enemies_mortos = 0
 
         ultimo_spawn_enemy = pygame.time.get_ticks()
 
@@ -226,6 +229,7 @@ def executar_jogo():
 
                 if enemy.rect.x < -enemy.rect.width:
                     lista_enemies.remove(enemy)
+                    enemies_restantes_para_nascer += 1
 
             for laser_en in lista_lasers_enemies[:]:
                 laser_en.atualizar()
@@ -233,7 +237,7 @@ def executar_jogo():
                 if laser_en.rect.x < -laser_en.rect.width:
                     lista_lasers_enemies.remove(laser_en)
 
-            if enemies_restantes_para_nascer == 0 and len(lista_enemies) == 0:
+            if enemies_mortos >= total_enemies_da_fase:
                 tela_loading(tela, fase_atual, relogio)
                 fase_atual += 1 
                 
