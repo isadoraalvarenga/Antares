@@ -1,5 +1,7 @@
 import pygame
 import random
+import math
+from src.config import CAMINHO_DEATH_STAR
 
 def pegar_sprite(local_arquivo, x, y, width, height, scale=1):
     """Corta um único elemento de uma spritesheet BMP e remove o fundo."""
@@ -29,18 +31,44 @@ def pegar_sprite(local_arquivo, x, y, width, height, scale=1):
         
     return image
 
+class DeathStar:
+    def __init__(self, ancora_x, ancora_y):
+        self.image = pegar_sprite(CAMINHO_DEATH_STAR, x=0, y=0, width=512, height=512, scale=1)
+
+        self.rect = self.image.get_rect()
+
+        # Nasce centralizada no eixo Y e encostada na borda direita (fora da tela)
+        self.rect.y = (ancora_y - self.rect.height) / 2
+        self.rect.x = ancora_x
+
+        # Posição X de destino: para de entrar quando estiver totalmente visível à direita
+        self.destino_x = ancora_x - self.rect.width
+        self.velocidade_entrada = 3
+        self.entrando = True
+
+        self.base_y = self.rect.y
+        self.angulo = 0
+        self.amplitude = 25
+        self.velocidade_balanco = 0.02
+
+    def atualizar(self):
+        if self.entrando:
+            # Desliza para a esquerda até chegar no destino
+            self.rect.x -= self.velocidade_entrada
+            if self.rect.x <= self.destino_x:
+                self.rect.x = self.destino_x
+                self.entrando = False
+        else:
+            # Já entrou: oscila levemente para cima e para baixo
+            self.angulo += self.velocidade_balanco
+            self.rect.y = self.base_y + math.sin(self.angulo) * self.amplitude
+
+    def desenhar(self, tela):
+        tela.blit(self.image, self.rect)
+
 
 class Obstacle:
     def __init__(self, ancho_tela=800, alto_tela=600):
-        # ----------------------------------------------------------------------
-        # TESTE PROVISÓRIO: Criando um quadrado azul para testar o jogo
-        # (Depois que funcionar, vamos trocar isso pela imagem do asteroide)
-        # self.image = pygame.Surface((50, 50))
-        # self.image.fill((0, 0, 255)) # Cor Azul bem visível
-        # ----------------------------------------------------------------------
-        
-        # Se quiser testar a imagem direto depois, é só descomentar as duas linhas abaixo
-        # e apagar as duas linhas do quadrado azul ali em cima:
         self.image = pegar_sprite("assets/imagens/asteroide_sheet.png", x=0, y=0, width=48, height=48, scale=1)
         
         self.rect = self.image.get_rect()
