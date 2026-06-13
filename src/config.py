@@ -23,8 +23,8 @@ CAMINHO_SPRITES = "assets/imagens/spritesheet.bmp"
 FONTE = "assets/fontes/Starjout.ttf"
 
 CONFIG_FASES = {
-    1: {"total_inimigos": 8, "intervalo_spawn": 2.0, "vel_inimigo": 4},
-    2: {"total_inimigos": 15, "intervalo_spawn": 1.25, "vel_inimigo": 5},
-    3: {"total_inimigos": 22, "intervalo_spawn": 0.90, "vel_inimigo": 6},
-    4: {"total_inimigos": 1, "intervalo_spawn": 999.0, "vel_inimigo": 2}#Estrela da morte
+    1: {"total_enemies": 8, "intervalo_spawn": 2.0, "vel_enemy": 4},
+    2: {"total_enemies": 15, "intervalo_spawn": 1.25, "vel_enemy": 5},
+    3: {"total_enemies": 22, "intervalo_spawn": 0.90, "vel_enemy": 6},
+    4: {"total_enemies": 1, "intervalo_spawn": 999.0, "vel_enemy": 2}#Estrela da morte
 }
