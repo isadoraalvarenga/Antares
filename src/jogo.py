@@ -20,7 +20,8 @@ from src.funcoes import (
     limitar_valor,
     verificar_colisao,
     tomar_dano,
-    verificar_vida_baixa
+    verificar_vida_baixa,
+    calcular_pontos
 )
 from src.sprites import pegar_sprite, Obstacle, Enemies
 from src.dados import (
@@ -159,7 +160,9 @@ def executar_jogo():
         lista_obstaculos = []
         lista_enemies = []
         lista_lasers_enemies = []
+        lista_lasers_jogador = []
 
+        cooldown_tiro_jogador = 0
         contador_tempo = 0
         pontos = 0
         vidas = 100.0
@@ -201,6 +204,15 @@ def executar_jogo():
 
             teclas = pygame.key.get_pressed()
 
+            if cooldown_tiro_jogador > 0:
+                cooldown_tiro_jogador -= 1
+
+            if teclas[pygame.K_SPACE] and cooldown_tiro_jogador == 0:
+                # Cria um retângulo temporário para o laser saindo da frente da sua nave
+                novo_laser = pygame.Rect(jogador["rect"].right, jogador["rect"].centery, 15, 4)
+                lista_lasers_jogador.append(novo_laser)
+                cooldown_tiro_jogador = 15
+
             # Movimentação alterando direto os eixos X e Y do retângulo do jogador
             if teclas[pygame.K_LEFT]:
                 jogador["rect"].x -= velocidade
@@ -227,15 +239,42 @@ def executar_jogo():
             for enemy in lista_enemies[:]:
                 enemy.atualizar(lista_lasers_enemies)
 
+                if verificar_colisao(jogador["rect"], enemy.rect):
+                    vidas = tomar_dano(vidas, 15.0) 
+                    lista_enemies.remove(enemy)
+                    enemies_restantes_para_nascer += 1 
+                    continue
+
                 if enemy.rect.x < -enemy.rect.width:
                     lista_enemies.remove(enemy)
                     enemies_restantes_para_nascer += 1
 
             for laser_en in lista_lasers_enemies[:]:
                 laser_en.atualizar()
+
+                if verificar_colisao(jogador["rect"], laser_en.rect):
+                    vidas = tomar_dano(vidas, 5.0) # Cada tiro tira 5% de vida
+                    lista_lasers_enemies.remove(laser_en)
+                    continue
                 
                 if laser_en.rect.x < -laser_en.rect.width:
                     lista_lasers_enemies.remove(laser_en)
+
+            for laser_pl in lista_lasers_jogador[:]:
+                laser_pl.x += 15 
+                
+                if laser_pl.x > LARGURA_TELA:
+                    lista_lasers_jogador.remove(laser_pl)
+                    continue
+                
+                for enemy in lista_enemies[:]:
+                    if verificar_colisao(laser_pl, enemy.rect):
+                        pontos = calcular_pontos(pontos, 100)
+                        enemies_mortos += 1 
+                        lista_enemies.remove(enemy)
+                        if laser_pl in lista_lasers_jogador:
+                            lista_lasers_jogador.remove(laser_pl)
+                        break
 
             if enemies_mortos >= total_enemies_da_fase:
                 tela_loading(tela, fase_atual, relogio)
@@ -300,6 +339,9 @@ def executar_jogo():
 
             for enemy in lista_enemies:
                 enemy.desenhar(tela)
+
+            for laser_pl in lista_lasers_jogador:
+                pygame.draw.rect(tela, (0, 255, 0), laser_pl)
 
             tela.blit(jogador["imagem"], jogador["rect"])
 
