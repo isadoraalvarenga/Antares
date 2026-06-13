@@ -10,7 +10,9 @@ from src.config import (
     FONTE,
     RED_ANTARES,
     BRANCO,
-    CAMINHO_SPRITES
+    PRETO,
+    CAMINHO_SPRITES,
+    CONFIG_FASES
 )
 
 from src.funcoes import (
@@ -20,7 +22,7 @@ from src.funcoes import (
     tomar_dano,
     verificar_vida_baixa
 )
-from src.sprites import pegar_sprite, Obstacle
+from src.sprites import pegar_sprite, Obstacle, Enemies
 from src.dados import (
     salvar_recorde,
     carregar_recorde,
@@ -100,6 +102,17 @@ def desenhar_barra_vida(superficie, x, y, vidas_atuais, vidas_maximas=3):
     pygame.draw.rect(superficie, (0, 255, 0), rect_vida)
     pygame.draw.rect(superficie, (255, 255, 255), rect_fundo, 2)
 
+def tela_loading(tela, fase_atual, relogio):
+    """Tela de loading/reparo entre as fases."""
+    fonte = pygame.font.Font(FONTE, 50)
+    texto = fonte.render(f"FASE {fase_atual} CONCLUIDA! Iniciando Sistemas...", True, BRANCO)
+    rect_texto = texto.get_rect(center=(LARGURA_TELA // 2, ALTURA_TELA // 2))
+    
+    tela.fill(PRETO)
+    tela.blit(texto, rect_texto)
+    pygame.display.flip()
+    
+    pygame.time.wait(2000)
 
 def executar_jogo():
     """Executa o loop principal do jogo e controla estado, colisões e pontuação."""
@@ -140,9 +153,13 @@ def executar_jogo():
 
     # Loop externo: cada volta e uma nova partida.
     jogando = True
+    fase_atual = 1
     while jogando:
         # --- Reset: variaveis que vivem apenas uma partida nascem do zero ---
         lista_obstaculos = []
+        lista_enemies = []
+        lista_lasers_enemies = []
+
         contador_tempo = 0
         pontos = 0
         vidas = 100.0
@@ -154,6 +171,13 @@ def executar_jogo():
         ferramenta_rect = pygame.Rect(0, 0, 0, 0)
         ferramenta_velocidade = 5
         chances_perdidas = 0
+
+        regras_fase = CONFIG_FASES[fase_atual]
+        enemies_restantes_para_nascer = regras_fase["total_enemies"]
+        intervalo_spawn = regras_fase["intervalo_spawn"] * 1000
+        velocidade_enemy = regras_fase["vel_enemy"]
+
+        ultimo_spawn_enemy = pygame.time.get_ticks()
 
         # Loop interno (partida): processa entrada, atualiza estado e renderiza.
         rodando = True
