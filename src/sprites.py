@@ -31,7 +31,15 @@ def pegar_sprite(local_arquivo, x, y, width, height, scale=1):
 
 
 class Obstacle:
+    TIPOS = [
+        (0.6, 5),   # pequeno → -5%
+        (1.0, 10),  # médio   → -10%
+        (1.5, 15),  # grande  → -15%
+    ]
+
     def __init__(self, ancho_tela=800, alto_tela=600):
+        scale, self.dano = random.choice(self.TIPOS)
+        
         # ----------------------------------------------------------------------
         # TESTE PROVISÓRIO: Criando um quadrado azul para testar o jogo
         # (Depois que funcionar, vamos trocar isso pela imagem do asteroide)
@@ -41,7 +49,10 @@ class Obstacle:
         
         # Se quiser testar a imagem direto depois, é só descomentar as duas linhas abaixo
         # e apagar as duas linhas do quadrado azul ali em cima:
-        self.image = pegar_sprite("assets/imagens/asteroide_sheet.png", x=0, y=0, width=48, height=48, scale=1)
+        self.image = pegar_sprite(
+            "assets/imagens/asteroide_sheet.png",
+            x=0, y=0, width=48, height=48, scale=scale
+        )
         
         self.rect = self.image.get_rect()
         
@@ -61,3 +72,5 @@ class Obstacle:
     def desenhar(self, tela):
         # Desenha o obstáculo na tela
         tela.blit(self.image, self.rect)
+
+    

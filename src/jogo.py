@@ -18,6 +18,7 @@ from src.funcoes import (
     limitar_valor,
     verificar_colisao,
     tomar_dano,
+    verificar_vida_baixa
 )
 from src.sprites import pegar_sprite, Obstacle
 from src.dados import (
@@ -144,8 +145,10 @@ def executar_jogo():
         lista_obstaculos = []
         contador_tempo = 0
         pontos = 0
-        vidas = 3
+        vidas = 100.0
+        ferramenta_coletada_na_fase = False
         jogador["rect"].topleft = (100, 100)
+
 
         ferramenta_na_tela = False
         ferramenta_rect = pygame.Rect(0, 0, 0, 0)
@@ -190,7 +193,7 @@ def executar_jogo():
                 lista_obstaculos.append(Obstacle(LARGURA_TELA, ALTURA_TELA))
                 contador_tempo = 0
 
-            if vidas <= 1.0 and not ferramenta_na_tela:
+            if verificar_vida_baixa(vidas) and not ferramenta_na_tela and not ferramenta_coletada_na_fase:
                 if random.random() < 0.005:
                     ferramenta_rect = ferramenta_image.get_rect()
                     ferramenta_rect.x = LARGURA_TELA 
@@ -201,26 +204,30 @@ def executar_jogo():
                 ferramenta_rect.x -= ferramenta_velocidade
                 
                 if verificar_colisao(jogador["rect"], ferramenta_rect):
-                    vidas = limitar_valor(vidas + 0.20, 0, 3.0)  
+                    vidas = limitar_valor(vidas + 20.0, 0, 100.0)
+                    ferramenta_coletada_na_fase = True
                     ferramenta_na_tela = False
                 
                 elif ferramenta_rect.x < -ferramenta_rect.width:
                     ferramenta_na_tela = False
-                    vidas = tomar_dano(vidas, 0.03)
+                    chances_perdidas += 1
+                    if chances_perdidas >= 3:
+                        vidas = tomar_dano(vidas, 3.0)
+                        chances_perdidas = 0
 
             for obstaculo in lista_obstaculos[:]:
                 obstaculo.atualizar()
 
                 if verificar_colisao(jogador["rect"], obstaculo.rect):
-                    vidas = tomar_dano(vidas, 1)
+                    vidas = tomar_dano(vidas, obstaculo.dano)
                     lista_obstaculos.remove(obstaculo)
 
                 elif obstaculo.rect.y > ALTURA_TELA:
                     lista_obstaculos.remove(obstaculo)
 
-            # Regras de fim de jogo e recorde
             if jogador_perdeu(vidas):
-                rodando = False
+                 
+                 rodando = False
 
             if pontos > recorde:
                 recorde = pontos
@@ -237,7 +244,7 @@ def executar_jogo():
             for obstaculo in lista_obstaculos:
                 obstaculo.desenhar(tela)
 
-            desenhar_barra_vida(tela, 20, 20, vidas, vidas_maximas=3)
+            desenhar_barra_vida(tela, 20, 20, vidas, vidas_maximas=100)
 
             pygame.display.flip()
 
