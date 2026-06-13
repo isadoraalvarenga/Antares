@@ -212,6 +212,37 @@ def executar_jogo():
             jogador["rect"].x = limitar_valor(jogador["rect"].x, 0, LARGURA_TELA - jogador["rect"].width)
             jogador["rect"].y = limitar_valor(jogador["rect"].y, 0, ALTURA_TELA - jogador["rect"].height)
 
+            tempo_atual = pygame.time.get_ticks()
+
+            if enemies_restantes_para_nascer > 0:
+                if tempo_atual - ultimo_spawn_enemy >= intervalo_spawn:
+                    
+                    lista_enemies.append(Enemies(LARGURA_TELA, ALTURA_TELA, velocidade_enemy))
+                    enemies_restantes_para_nascer -= 1
+                    ultimo_spawn_enemy = tempo_atual 
+
+            for enemy in lista_enemies[:]:
+                enemy.atualizar(lista_lasers_enemies)
+
+                if enemy.rect.x < -enemy.rect.width:
+                    lista_enemies.remove(enemy)
+
+            for laser_en in lista_lasers_enemies[:]:
+                laser_en.atualizar()
+                
+                if laser_en.rect.x < -laser_en.rect.width:
+                    lista_lasers_enemies.remove(laser_en)
+
+            if enemies_restantes_para_nascer == 0 and len(lista_enemies) == 0:
+                tela_loading(tela, fase_atual, relogio)
+                fase_atual += 1 
+                
+                if fase_atual > 4:
+                    rodando = False
+                    fase_atual = 1 
+                else:
+                    rodando = False
+
             contador_tempo += 1
             if contador_tempo >= FREQUENCIA_ASTEROIDE:
                 lista_obstaculos.append(Obstacle(LARGURA_TELA, ALTURA_TELA))
@@ -259,6 +290,12 @@ def executar_jogo():
 
             tela.blit(imagem_original, (fundo_x, 0))
             tela.blit(imagem_original, (fundo_x + LARGURA_TELA, 0))
+
+            for laser_en in lista_lasers_enemies:
+                laser_en.desenhar(tela)
+
+            for enemy in lista_enemies:
+                enemy.desenhar(tela)
 
             tela.blit(jogador["imagem"], jogador["rect"])
 
