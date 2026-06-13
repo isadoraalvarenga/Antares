@@ -32,20 +32,25 @@ def tela_fim_jogo(tela, fundo, relogio):
     fonte_subtitulo = pygame.font.Font(FONTE, 50)
     fonte_botao = pygame.font.Font(FONTE, 30)
 
+    # Tudo e posicionado a partir do centro da tela, para se adaptar a qualquer
+    # resolucao em vez de ficar preso no topo.
+    centro_x = LARGURA_TELA // 2
+    centro_y = ALTURA_TELA // 2
+
     titulo = fonte_titulo.render("Antares", True, RED_ANTARES)
-    rect_titulo = titulo.get_rect(center=(LARGURA_TELA // 2, 120))
+    rect_titulo = titulo.get_rect(center=(centro_x, centro_y - 180))
 
     subtitulo = fonte_subtitulo.render("Game over", True, RED_ANTARES)
-    rect_subtitulo = subtitulo.get_rect(center=(LARGURA_TELA // 2, 200))
+    rect_subtitulo = subtitulo.get_rect(center=(centro_x, centro_y - 100))
 
     rotulo_jogar = fonte_botao.render("Jogar", True, BRANCO)
     rotulo_sair = fonte_botao.render("Sair", True, BRANCO)
 
     # Areas dos botoes (servem para desenhar e para detectar o clique).
     botao_jogar = pygame.Rect(0, 0, 240, 60)
-    botao_jogar.center = (LARGURA_TELA // 2, 350)
+    botao_jogar.center = (centro_x, centro_y + 30)
     botao_sair = pygame.Rect(0, 0, 240, 60)
-    botao_sair.center = (LARGURA_TELA // 2, 440)
+    botao_sair.center = (centro_x, centro_y + 120)
 
     while True:
         relogio.tick(FPS)
@@ -99,7 +104,10 @@ def executar_jogo():
     """Executa o loop principal do jogo e controla estado, colisões e pontuação."""
     pygame.init()
 
-    tela = pygame.display.set_mode((LARGURA_TELA, ALTURA_TELA))
+    tela = pygame.display.set_mode(
+        (LARGURA_TELA, ALTURA_TELA),
+        pygame.FULLSCREEN
+    )
     pygame.display.set_caption(TITULO_JOGO)
 
     relogio = pygame.time.Clock()
@@ -119,11 +127,15 @@ def executar_jogo():
     }
 
     FREQUENCIA_ASTEROIDE = 40
+
     velocidade = 10
+    fundo_x = 0
+    velocidade_fundo = 5
+
     recorde = carregar_recorde(CAMINHO_RECORDE)
 
     imagem_original = pygame.image.load("assets/imagens/starsky.jpg").convert()
-    imagem_original = pygame.transform.scale(imagem_original, (800, 600))
+    imagem_original = pygame.transform.scale(imagem_original, (LARGURA_TELA, ALTURA_TELA))
 
     # Loop externo: cada volta e uma nova partida.
     jogando = True
@@ -151,6 +163,11 @@ def executar_jogo():
                     jogando = False
                 if evento.type == pygame.KEYDOWN and evento.key == pygame.K_ESCAPE:
                     rodando = False
+
+            
+            fundo_x -= velocidade_fundo
+            if fundo_x <= -LARGURA_TELA:
+                fundo_x = 0
 
             teclas = pygame.key.get_pressed()
 
@@ -209,7 +226,8 @@ def executar_jogo():
                 recorde = pontos
                 salvar_recorde(CAMINHO_RECORDE, recorde)
 
-            tela.blit(imagem_original, (0, 0))
+            tela.blit(imagem_original, (fundo_x, 0))
+            tela.blit(imagem_original, (fundo_x + LARGURA_TELA, 0))
 
             tela.blit(jogador["imagem"], jogador["rect"])
 

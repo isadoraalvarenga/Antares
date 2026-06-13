@@ -46,10 +46,10 @@ class Obstacle:
         self.rect = self.image.get_rect()
         
         # Sorteia a posição Y de nascimento do asteroide
-        self.rect.y = random.randint(0, 550)
+        self.rect.y = random.randint(0, alto_tela - self.rect.height)
 
         # Surge o obstáculo da direita para a esquerda
-        self.rect.x = 850
+        self.rect.x = ancho_tela
         
         # Sorteia a velocidade de queda
         self.velocidad = random.randint(4, 7)
