@@ -240,6 +240,9 @@ def executar_jogo():
 
             if death_star is not None:
                 death_star.atualizar()
+                # Feixe do superlaser: encostou no jogador, morreu.
+                if death_star.laser_rect is not None and verificar_colisao(jogador["rect"], death_star.laser_rect):
+                    vidas = 0
 
             if verificar_vida_baixa(vidas) and not ferramenta_na_tela and not ferramenta_coletada_na_fase:
                 if random.random() < 0.005:
@@ -296,6 +299,7 @@ def executar_jogo():
 
             if death_star is not None and vidas_death_star > 0:
                 death_star.desenhar(tela)
+                death_star.desenhar_laser(tela)
                 desenhar_barra_vida(tela, 10, ALTURA_TELA - 35, vidas_death_star, 200, LARGURA_TELA - 20, (255, 0, 0), (0, 0, 0), (118, 50, 1))
 
             desenhar_barra_vida(tela, 20, 20, vidas, vidas_maximas=100)

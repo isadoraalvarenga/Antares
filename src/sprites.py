@@ -32,6 +32,13 @@ def pegar_sprite(local_arquivo, x, y, width, height, scale=1):
     return image
 
 class DeathStar:
+    # Ciclo do superlaser, em frames: espera -> carrega o triangulo -> dispara o feixe.
+    TEMPO_RECARGA = 200   # pausa entre um tiro e outro
+    TEMPO_CARGA = 80      # triangulo convergindo, ainda sem feixe (nao machuca)
+    TEMPO_DISPARO = 100   # feixe reto ativo: encostou, morreu
+    ESPESSURA_FEIXE = 4
+    LASER_COR = (87, 25, 255)   # roxo do glow (o nucleo e sempre branco)
+
     def __init__(self, ancora_x, ancora_y):
         self.image = pegar_sprite(CAMINHO_DEATH_STAR, x=0, y=0, width=424, height=412, scale=1)
 
@@ -55,10 +62,16 @@ class DeathStar:
         self.amplitude = 25
         self.velocidade_balanco = 0.02
 
+        # --- Superlaser ---
+        self.laser_estado = "recarregando"
+        self.laser_timer = self.TEMPO_RECARGA
+        self.laser_rect = None          # so existe na fase de disparo (colisao)
+        self.prato_x = 0                # posicao do prato neste frame
+        self.prato_y = 0
+        self.laser_fase = 0             # avança sempre, gera a oscilacao de opacidade
+
     @property
     def hitbox(self):
-        # Recorte visível posicionado no mundo: acompanha o rect, mas sem o
-        # padding transparente, então o tiro só some ao encostar na esfera.
         return self._bounds.move(self.rect.x, self.rect.y)
 
     def atualizar(self):
@@ -72,6 +85,86 @@ class DeathStar:
             # Já entrou: oscila levemente para cima e para baixo
             self.angulo += self.velocidade_balanco
             self.rect.y = self.base_y + math.sin(self.angulo) * self.amplitude
+
+        self._atualizar_laser()
+
+    def _atualizar_laser(self):
+        # Pulso de opacidade roda sempre, independente da fase do laser.
+        self.laser_fase += 0.2
+
+        # So começa a mirar depois de ter entrado totalmente na tela.
+        if self.entrando:
+            return
+
+        # Posicao do prato neste frame (acompanha o balanço da esfera).
+        self.prato_x = self.hitbox.left + 135
+        self.prato_y = self.hitbox.top + 115
+
+        # Avança o ciclo: quando o timer zera, passa para a proxima fase.
+        self.laser_timer -= 1
+        if self.laser_timer <= 0:
+            if self.laser_estado == "recarregando":
+                self.laser_estado = "carregando"
+                self.laser_timer = self.TEMPO_CARGA
+            elif self.laser_estado == "carregando":
+                self.laser_estado = "disparando"
+                self.laser_timer = self.TEMPO_DISPARO
+            else:  # disparando
+                self.laser_estado = "recarregando"
+                self.laser_timer = self.TEMPO_RECARGA
+
+        # O feixe reto so machuca enquanto dispara: rect de x=0 ate o foco.
+        if self.laser_estado == "disparando":
+            foco_x = self.prato_x - 90
+            self.laser_rect = pygame.Rect(
+                0, self.prato_y - self.ESPESSURA_FEIXE // 2,
+                int(foco_x), self.ESPESSURA_FEIXE,
+            )
+        else:
+            self.laser_rect = None
+
+    def _linha_laser(self, camada, inicio, fim, largura):
+        # Empilha camadas: glow largo e translucido -> nucleo fino branco-quente.
+        r, g, b = self.LASER_COR
+        pygame.draw.line(camada, (r, g, b, 60),  inicio, fim, largura * 3)
+        pygame.draw.line(camada, (r, g, b, 120), inicio, fim, largura * 2)
+        pygame.draw.line(camada, (r, g, b, 220), inicio, fim, largura)
+        pygame.draw.line(camada, (255, 255, 255), inicio, fim, max(2, largura // 2))
+
+    def desenhar_laser(self, tela):
+        # Recarregando: nada na tela.
+        if self.laser_estado == "recarregando":
+            return
+
+        px, py = self.prato_x, self.prato_y
+
+        # Desenha numa camada propria; a opacidade global (pulso/fade) vai no fim.
+        camada = pygame.Surface(tela.get_size(), pygame.SRCALPHA)
+
+        # Triangulo de convergencia (aparece na carga e continua no disparo).
+        topo = (px, py - 40)
+        baixo = (px, py + 65)
+        foco = (px - 90, py)
+        reto = (px + 50, py)
+        reto2 = (px - 50, py + 13)
+        reto3 = (px, py + 13)
+        self._linha_laser(camada, topo,  foco, 3)
+        self._linha_laser(camada, baixo, foco, 3)
+        self._linha_laser(camada, reto, foco, 3)
+        self._linha_laser(camada, reto2, foco, 3)
+        self._linha_laser(camada, reto3, foco, 3)
+
+        # Feixe reto: so na fase de disparo (e o que tem laser_rect).
+        if self.laser_estado == "disparando":
+            self._linha_laser(camada, foco, (0, py), self.ESPESSURA_FEIXE)
+
+        if self.laser_estado == "carregando":
+            # Pulsa enquanto carrega.
+            camada.set_alpha(int(157 + 98 * math.sin(self.laser_fase)))
+        else:
+            # Disparando: comeca solido e some gradualmente conforme o timer zera.
+            camada.set_alpha(int(255 * self.laser_timer / self.TEMPO_DISPARO))
+        tela.blit(camada, (0, 0))
 
     def desenhar(self, tela):
         tela.blit(self.image, self.rect)
