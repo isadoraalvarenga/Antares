@@ -31,12 +31,7 @@ def verificar_colisao(retangulo_1, retangulo_2):
 
 
 def verificar_vida_baixa(vidas):
-<<<<<<< HEAD
-    """Retorna True se a vida estiver em 35% ou menos."""
     return vidas <= 35.0
-=======
-    """Ativa quando a barra de vida está abaixo de 30%."""
-    return vidas <= 1.0
 
 
 def tela_reparo(tela, relogio, perguntas_disponiveis, print_jogo, LARGURA_TELA, ALTURA_TELA, FPS, FONTE, BRANCO):
@@ -142,4 +137,3 @@ def tela_reparo(tela, relogio, perguntas_disponiveis, print_jogo, LARGURA_TELA, 
             pygame.display.flip()
         
     return acertou, questao
->>>>>>> 6c4b8c9 (feat: adiciona tela de reparos com perguntas)

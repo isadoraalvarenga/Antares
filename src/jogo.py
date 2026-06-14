@@ -18,25 +18,17 @@ from src.funcoes import (
     limitar_valor,
     verificar_colisao,
     tomar_dano,
-<<<<<<< HEAD
-    verificar_vida_baixa
-)
-
-=======
+    verificar_vida_baixa,
     tela_reparo
 )
 
-from src.sprites import pegar_sprite, Obstacle 
->>>>>>> 6c4b8c9 (feat: adiciona tela de reparos com perguntas)
 from src.dados import (
     salvar_recorde,
     carregar_recorde,
 )
 
-<<<<<<< HEAD
 from src.sprites import pegar_sprite, Obstacle, Bullet
 
-=======
 # Banco de dados das perguntas
 
 perguntas = [
@@ -92,7 +84,6 @@ perguntas = [
     }
 
 ]
->>>>>>> 6c4b8c9 (feat: adiciona tela de reparos com perguntas)
 
 def tela_fim_jogo(tela, fundo, relogio):
     """Mostra a tela de fim de jogo. Retorna True para reiniciar, False para sair."""
@@ -211,26 +202,18 @@ def executar_jogo():
         lista_obstaculos = []
         contador_tempo = 0
         pontos = 0
-<<<<<<< HEAD
         vidas = 100.0
         ferramenta_coletada_na_fase = False
-=======
-        vidas = 3.0
->>>>>>> 6c4b8c9 (feat: adiciona tela de reparos com perguntas)
         jogador["rect"].topleft = (100, 100)
 
 
         ferramenta_na_tela = False
         ferramenta_rect = pygame.Rect(0, 0, 0, 0)
         ferramenta_velocidade = 5
-<<<<<<< HEAD
         chances_perdidas = 0
         lista_balas = []
         cooldown_tiro = 0
-=======
-
         perguntas_da_partida = list(perguntas)
->>>>>>> 6c4b8c9 (feat: adiciona tela de reparos com perguntas)
 
         # Loop interno (partida): processa entrada, atualiza estado e renderiza.
         rodando = True
@@ -302,11 +285,8 @@ def executar_jogo():
                 
                 # Se o jogador pegar a ferramenta de reparo
                 if verificar_colisao(jogador["rect"], ferramenta_rect):
-<<<<<<< HEAD
                     vidas = limitar_valor(vidas + 20.0, 0, 100.0)
                     ferramenta_coletada_na_fase = True
-=======
->>>>>>> 6c4b8c9 (feat: adiciona tela de reparos com perguntas)
                     ferramenta_na_tela = False
                     
                     # 1. Desenha tudo na tela rapidamente para capturar a imagem de fundo
@@ -314,7 +294,7 @@ def executar_jogo():
                     tela.blit(jogador["imagem"], jogador["rect"])
                     for obs in lista_obstaculos:
                         obs.desenhar(tela)
-                    desenhar_barra_vida(tela, 20, 20, vidas, vidas_maximas=3)
+                    desenhar_barra_vida(tela, 20, 20, vidas, vidas_maximas=100)
                     
                     # Tira um print da tela do jogo para congelar no fundo do quiz
                     print_jogo = tela.copy()
@@ -327,7 +307,7 @@ def executar_jogo():
                     
                     # 3. Aplica as regras do resultado do quiz
                     if acertou:
-                        vidas = limitar_valor(vidas + 1.0, 0, 3.0) # Ganha 20% de uma vida
+                        vidas = limitar_valor(vidas + 20.0, 0, 100.0) # Ganha 20% de vida
                         if questao_respondida in perguntas_da_partida:
                             perguntas_da_partida.remove(questao_respondida) # Remove para não repetir
                     else:
