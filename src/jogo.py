@@ -23,7 +23,7 @@ from src.funcoes import (
     verificar_vida_baixa,
     calcular_pontos
 )
-from src.sprites import pegar_sprite, Obstacle, Enemies
+from src.sprites import pegar_sprite, Obstacle, Enemies, Bullet
 from src.dados import (
     salvar_recorde,
     carregar_recorde,
@@ -221,10 +221,10 @@ def executar_jogo():
                 cooldown_tiro_jogador -= 1
 
             if teclas[pygame.K_SPACE] and cooldown_tiro_jogador == 0:
-                # Cria um retângulo temporário para o laser saindo da frente da sua nave
-                novo_laser = pygame.Rect(jogador["rect"].right, jogador["rect"].centery, 15, 4)
-                lista_lasers_jogador.append(novo_laser)
-                cooldown_tiro_jogador = 15
+               
+                novo_tiro = Bullet(jogador["rect"].right, jogador["rect"].centery)
+                lista_lasers_jogador.append(novo_tiro)
+                cooldown_tiro_jogador = 10
 
             # Movimentação alterando direto os eixos X e Y do retângulo do jogador
             if teclas[pygame.K_LEFT]:
@@ -234,6 +234,7 @@ def executar_jogo():
             if teclas[pygame.K_UP]:
                 jogador["rect"].y -= velocidade
             if teclas[pygame.K_DOWN]:
+
                 jogador["rect"].y += velocidade
 
             # Limitando o jogador dentro das bordas da tela usando as propriedades do Rect
@@ -273,20 +274,20 @@ def executar_jogo():
                 if laser_en.rect.x < -laser_en.rect.width:
                     lista_lasers_enemies.remove(laser_en)
 
-            for laser_pl in lista_lasers_jogador[:]:
-                laser_pl.x += 15 
+            for tiro in lista_lasers_jogador[:]:
+                tiro.atualizar()
                 
-                if laser_pl.x > LARGURA_TELA:
-                    lista_lasers_jogador.remove(laser_pl)
+                if tiro.rect.x > LARGURA_TELA:
+                    lista_lasers_jogador.remove(tiro)
                     continue
                 
                 for enemy in lista_enemies[:]:
-                    if verificar_colisao(laser_pl, enemy.rect):
+                    if verificar_colisao(tiro.rect, enemy.rect):
                         pontos = calcular_pontos(pontos, 100)
                         enemies_mortos += 1 
                         lista_enemies.remove(enemy)
-                        if laser_pl in lista_lasers_jogador:
-                            lista_lasers_jogador.remove(laser_pl)
+                        if tiro in lista_lasers_jogador:
+                            lista_lasers_jogador.remove(tiro)
                         break
 
             if enemies_mortos >= total_enemies_da_fase:
@@ -367,8 +368,8 @@ def executar_jogo():
             for enemy in lista_enemies:
                 enemy.desenhar(tela)
 
-            for laser_pl in lista_lasers_jogador:
-                pygame.draw.rect(tela, (0, 255, 0), laser_pl)
+            for tiro in lista_lasers_jogador:
+                tiro.desenhar(tela)
 
             tela.blit(jogador["imagem"], jogador["rect"])
 

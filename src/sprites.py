@@ -114,3 +114,18 @@ class LaserEnemies:
 
     def desenhar(self, tela):
         tela.blit(self.image, self.rect)
+
+class Bullet:
+    """O layout exclusivo do tiro criado pela colega integrado ao seu arquivo"""
+    def __init__(self, x, y):
+        self.image = pygame.image.load("assets/imagens/bullet.png").convert_alpha()
+        # Reduz o tamanho da bala conforme o padrão que ela definiu
+        self.image = pygame.transform.scale(self.image, (100, 84))
+        self.rect = self.image.get_rect(midleft=(x, y))
+        self.velocidade = 15
+
+    def atualizar(self):
+        self.rect.x += self.velocidade
+
+    def desenhar(self, tela):
+        tela.blit(self.image, self.rect)
