@@ -147,7 +147,7 @@ def executar_jogo():
         contador_tempo = 0
         pontos = 0
         vidas = 100.0
-        vidas_death_star = 5
+        vidas_death_star = 200
         death_star = None
         destino_x = 20
         velocidade_entrada = 3
@@ -207,7 +207,7 @@ def executar_jogo():
             # Tiro
             cooldown_tiro = max(0, cooldown_tiro - 1)
             if teclas[pygame.K_SPACE] and cooldown_tiro == 0:
-                lista_balas.append(Bullet(jogador["rect"].right, jogador["rect"].centery))
+                lista_balas.append(Bullet(jogador["rect"].right - 20, jogador["rect"].centery))
                 cooldown_tiro = 10
 
             # Atualizar balas e colisão com asteroides
@@ -223,13 +223,18 @@ def executar_jogo():
                         lista_balas.remove(bala)
                         lista_obstaculos.remove(obstaculo)
                         break
+                
+                if death_star is not None and verificar_colisao(death_star.hitbox, bala.rect):
+                    vidas_death_star = tomar_dano(vidas_death_star, bala.dano)
+                    lista_balas.remove(bala)
+
 
             contador_tempo += 1
             if contador_tempo >= FREQUENCIA_ASTEROIDE:
                 lista_obstaculos.append(Obstacle(LARGURA_TELA, ALTURA_TELA))
                 contador_tempo = 0
 
-            if agora >= 10000 and death_star is None:
+            if agora >= 1000 and death_star is None:
                 death_star = DeathStar(LARGURA_TELA, ALTURA_TELA)
                 
 
@@ -289,9 +294,9 @@ def executar_jogo():
             for obstaculo in lista_obstaculos:
                 obstaculo.desenhar(tela)
 
-            if death_star is not None:
+            if death_star is not None and vidas_death_star > 0:
                 death_star.desenhar(tela)
-                desenhar_barra_vida(tela, 10, ALTURA_TELA - 35, vidas_death_star, 5, LARGURA_TELA - 20, (255, 0, 0), (0, 0, 0), (118, 50, 1))
+                desenhar_barra_vida(tela, 10, ALTURA_TELA - 35, vidas_death_star, 200, LARGURA_TELA - 20, (255, 0, 0), (0, 0, 0), (118, 50, 1))
 
             desenhar_barra_vida(tela, 20, 20, vidas, vidas_maximas=100)
 

@@ -33,9 +33,13 @@ def pegar_sprite(local_arquivo, x, y, width, height, scale=1):
 
 class DeathStar:
     def __init__(self, ancora_x, ancora_y):
-        self.image = pegar_sprite(CAMINHO_DEATH_STAR, x=0, y=0, width=512, height=512, scale=1)
+        self.image = pegar_sprite(CAMINHO_DEATH_STAR, x=0, y=0, width=424, height=412, scale=1)
 
         self.rect = self.image.get_rect()
+
+        # Recorte do conteudo visivel dentro da imagem (ignora o padding transparente).
+        # Serve de base para a hitbox seguir a esfera, e nao o quadrado de 512x512.
+        self._bounds = self.image.get_bounding_rect()
 
         # Nasce centralizada no eixo Y e encostada na borda direita (fora da tela)
         self.rect.y = (ancora_y - self.rect.height) / 2
@@ -50,6 +54,12 @@ class DeathStar:
         self.angulo = 0
         self.amplitude = 25
         self.velocidade_balanco = 0.02
+
+    @property
+    def hitbox(self):
+        # Recorte visível posicionado no mundo: acompanha o rect, mas sem o
+        # padding transparente, então o tiro só some ao encostar na esfera.
+        return self._bounds.move(self.rect.x, self.rect.y)
 
     def atualizar(self):
         if self.entrando:
@@ -102,11 +112,14 @@ class Obstacle:
 
 class Bullet:
     def __init__(self, x, y):
-        self.image = pygame.image.load("assets/imagens/bullet.png").convert_alpha()
+        self.image = pegar_sprite(
+            "assets/imagens/bullet.png",
+            x=0, y=0, width=154, height=64, scale=0.1
+        )
         # Reduz o tamanho da bala
-        self.image = pygame.transform.scale(self.image, (100, 84))
         self.rect = self.image.get_rect(midleft=(x, y))
         self.velocidade = 15
+        self.dano = 5
 
     def atualizar(self):
         self.rect.x += self.velocidade
