@@ -152,7 +152,7 @@ class DeathStar:
         self._linha_laser(camada, baixo, foco, 3)
         self._linha_laser(camada, reto2, foco, 3)
         self._linha_laser(camada, reto3, foco, 3)
-        self._linha_laser(camada, reto, foco, 3)
+        self._linha_laser(camada, reto, (px - 85, py), 3)
 
         # Feixe reto: so na fase de disparo (e o que tem laser_rect).
         if self.laser_estado == "disparando":
