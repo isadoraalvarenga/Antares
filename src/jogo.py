@@ -401,6 +401,13 @@ def executar_jogo():
         if jogando:
             jogando = tela_fim_jogo(tela, imagem_original, relogio)
 
+    
+    
+    
+    
+    
+    
+    
     pygame.quit()
 
 if __name__ == "__main__":
