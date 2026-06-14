@@ -87,8 +87,13 @@ perguntas = [
 
 ]
 
-def tela_fim_jogo(tela, fundo, relogio):
-    """Mostra a tela de fim de jogo. Retorna True para reiniciar, False para sair."""
+def tela_fim_partida(tela, fundo, relogio, subtitulo_texto, subtitulo_cor):
+    """Tela de fim de partida (game over / vitoria).
+
+    Todo o conteudo sobe gradualmente a partir da base da tela ate a posicao
+    final, e so depois os botoes ficam clicaveis. Retorna True para reiniciar,
+    False para sair.
+    """
     # Fontes e textos fixos sao criados uma vez, fora do loop.
     fonte_titulo = pygame.font.Font(FONTE, 100)
     fonte_subtitulo = pygame.font.Font(FONTE, 50)
@@ -100,29 +105,42 @@ def tela_fim_jogo(tela, fundo, relogio):
     centro_y = ALTURA_TELA // 2
 
     titulo = fonte_titulo.render("Antares", True, RED_ANTARES)
-    rect_titulo = titulo.get_rect(center=(centro_x, centro_y - 180))
-
-    subtitulo = fonte_subtitulo.render("Game over", True, RED_ANTARES)
-    rect_subtitulo = subtitulo.get_rect(center=(centro_x, centro_y - 100))
-
+    subtitulo = fonte_subtitulo.render(subtitulo_texto, True, subtitulo_cor)
     rotulo_jogar = fonte_botao.render("Jogar", True, BRANCO)
     rotulo_sair = fonte_botao.render("Sair", True, BRANCO)
 
-    # Areas dos botoes (servem para desenhar e para detectar o clique).
-    botao_jogar = pygame.Rect(0, 0, 240, 60)
-    botao_jogar.center = (centro_x, centro_y + 30)
-    botao_sair = pygame.Rect(0, 0, 240, 60)
-    botao_sair.center = (centro_x, centro_y + 120)
+    # Posicoes finais (centros) de cada elemento, relativas ao centro da tela.
+    centro_titulo = (centro_x, centro_y - 180)
+    centro_subtitulo = (centro_x, centro_y - 100)
+    centro_botao_jogar = (centro_x, centro_y + 30)
+    centro_botao_sair = (centro_x, centro_y + 120)
+
+    # Animacao de subida: o conteudo comeca deslocado para baixo (fora da tela)
+    # e sobe ate o deslocamento chegar a zero.
+    deslocamento_y = ALTURA_TELA
+    velocidade_subida = 30
 
     while True:
         relogio.tick(FPS)
 
+        animando = deslocamento_y > 0
+        if animando:
+            deslocamento_y = max(0, deslocamento_y - velocidade_subida)
+
         pos_mouse = pygame.mouse.get_pos()
+
+        # Areas dos botoes (servem para desenhar e para detectar o clique),
+        # recalculadas a cada frame com o deslocamento atual da animacao.
+        botao_jogar = pygame.Rect(0, 0, 240, 60)
+        botao_jogar.center = (centro_botao_jogar[0], centro_botao_jogar[1] + deslocamento_y)
+        botao_sair = pygame.Rect(0, 0, 240, 60)
+        botao_sair.center = (centro_botao_sair[0], centro_botao_sair[1] + deslocamento_y)
 
         for evento in pygame.event.get():
             if evento.type == pygame.QUIT:
                 return False
-            if evento.type == pygame.MOUSEBUTTONDOWN:
+            # So aceita cliques depois que a animacao termina.
+            if not animando and evento.type == pygame.MOUSEBUTTONDOWN:
                 if botao_jogar.collidepoint(evento.pos):
                     return True
                 if botao_sair.collidepoint(evento.pos):
@@ -133,8 +151,8 @@ def tela_fim_jogo(tela, fundo, relogio):
         cor_sair = (90, 90, 90) if botao_sair.collidepoint(pos_mouse) else (50, 50, 50)
 
         tela.blit(fundo, (0, 0))
-        tela.blit(titulo, rect_titulo)
-        tela.blit(subtitulo, rect_subtitulo)
+        tela.blit(titulo, titulo.get_rect(center=(centro_titulo[0], centro_titulo[1] + deslocamento_y)))
+        tela.blit(subtitulo, subtitulo.get_rect(center=(centro_subtitulo[0], centro_subtitulo[1] + deslocamento_y)))
 
         pygame.draw.rect(tela, cor_jogar, botao_jogar)
         pygame.draw.rect(tela, cor_sair, botao_sair)
@@ -144,6 +162,16 @@ def tela_fim_jogo(tela, fundo, relogio):
         tela.blit(rotulo_sair, rotulo_sair.get_rect(center=botao_sair.center))
 
         pygame.display.flip()
+
+
+def tela_fim_jogo(tela, fundo, relogio):
+    """Tela de game over. Retorna True para reiniciar, False para sair."""
+    return tela_fim_partida(tela, fundo, relogio, "Game over", RED_ANTARES)
+
+
+def tela_vitoria(tela, fundo, relogio):
+    """Tela de vitoria. Retorna True para reiniciar, False para sair."""
+    return tela_fim_partida(tela, fundo, relogio, "You won", RED_ANTARES)
 
 
 
@@ -224,7 +252,7 @@ def executar_jogo():
 
     # Loop externo: cada volta e uma nova partida.
     jogando = True
-    fase_atual = 4
+    fase_atual = 1
     while jogando:
         # --- Reset: variaveis que vivem apenas uma partida nascem do zero ---
         lista_obstaculos = []
@@ -238,6 +266,7 @@ def executar_jogo():
         vidas = 100.0
         vidas_death_star = 200
         death_star = None
+        venceu = False
         destino_x = 20
         velocidade_entrada = 3
         entrando = iniciar_entrada(jogador, ALTURA_TELA)
@@ -360,7 +389,7 @@ def executar_jogo():
                             lista_lasers_jogador.remove(tiro)
                         break
                 
-                if death_star is not None and verificar_colisao(death_star.hitbox, tiro.rect):
+                if tiro in lista_lasers_jogador and death_star is not None and verificar_colisao(death_star.hitbox, tiro.rect):
                     vidas_death_star = tomar_dano(vidas_death_star, tiro.dano)
                     lista_lasers_jogador.remove(tiro)
 
@@ -409,6 +438,11 @@ def executar_jogo():
                 # Feixe do superlaser: encostou no jogador, morreu.
                 if death_star.laser_rect is not None and verificar_colisao(jogador["rect"], death_star.laser_rect):
                     vidas = 0
+
+                # Estrela da morte destruida: o jogador venceu.
+                if vidas_death_star <= 0:
+                    venceu = True
+                    rodando = False
 
             if verificar_vida_baixa(vidas) and not ferramenta_na_tela and not ferramenta_coletada_na_fase:
                 if random.random() < 0.005:
@@ -523,7 +557,13 @@ def executar_jogo():
 
         # A partida acabou. Se o jogador nao fechou a janela, mostra a tela de fim.
         if jogando:
-            jogando = tela_fim_jogo(tela, imagem_original, relogio)
+            if venceu:
+                jogando = tela_vitoria(tela, imagem_original, relogio)
+                # Apos vencer, "Jogar" recomeca a campanha pela fase 1.
+                if jogando:
+                    fase_atual = 1
+            else:
+                jogando = tela_fim_jogo(tela, imagem_original, relogio)
 
     pygame.quit()
 
