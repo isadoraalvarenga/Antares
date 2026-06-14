@@ -150,9 +150,9 @@ class DeathStar:
         reto3 = (px, py + 13)
         self._linha_laser(camada, topo,  foco, 3)
         self._linha_laser(camada, baixo, foco, 3)
-        self._linha_laser(camada, reto, foco, 3)
         self._linha_laser(camada, reto2, foco, 3)
         self._linha_laser(camada, reto3, foco, 3)
+        self._linha_laser(camada, reto, foco, 3)
 
         # Feixe reto: so na fase de disparo (e o que tem laser_rect).
         if self.laser_estado == "disparando":
@@ -203,7 +203,50 @@ class Obstacle:
         # Desenha o obstáculo na tela
         tela.blit(self.image, self.rect)
 
+class Enemies:
+    def __init__(self, largura_tela, altura_tela, velocidade):
+        
+        try:
+            self.image = pygame.image.load("assets/imagens/tiedefender.png").convert_alpha()
+            self.image = pygame.transform.scale(self.image, (120, 120))
+        except Exception:
+            print("Aviso: Nao foi possivel carregar assets/imagens/tie_fighter.png")
+            self.image = pygame.Surface((40, 40))
+            self.image.fill((255, 0, 0))
+
+        self.rect = self.image.get_rect()
+        self.rect.x = largura_tela
+        
+        self.rect.y = random.randint(50, altura_tela - 80)
+        self.velocidade = velocidade
+        self.vida = 1 
+
+    def atualizar(self, lista_lasers_enemies):
+        self.rect.x -= self.velocidade
+
+        if random.random() < 0.01:
+            novo_laser = LaserEnemies(self.rect.left, self.rect.centery)
+            lista_lasers_enemies.append(novo_laser)
+
+    def desenhar(self, tela):
+        tela.blit(self.image, self.rect)
+
+class LaserEnemies:
+    def __init__(self, x, y):
+        self.image = pygame.Surface((12, 4))
+        self.image.fill((255, 50, 50)) # Laser vermelho clássico do Império
+        self.rect = self.image.get_rect()
+        self.rect.center = (x, y)
+        self.velocidade = 10
+
+    def atualizar(self):
+        self.rect.x -= self.velocidade
+
+    def desenhar(self, tela):
+        tela.blit(self.image, self.rect)
+
 class Bullet:
+    """O layout exclusivo do tiro criado pela colega integrado ao seu arquivo"""
     def __init__(self, x, y):
         self.image = pegar_sprite(
             "assets/imagens/bullet.png",
@@ -219,5 +262,3 @@ class Bullet:
 
     def desenhar(self, tela):
         tela.blit(self.image, self.rect)
-
-    

@@ -10,7 +10,9 @@ from src.config import (
     FONTE,
     RED_ANTARES,
     BRANCO,
-    CAMINHO_SPRITES
+    PRETO,
+    CAMINHO_SPRITES,
+    CONFIG_FASES
 )
 
 from src.funcoes import (
@@ -18,15 +20,72 @@ from src.funcoes import (
     limitar_valor,
     verificar_colisao,
     tomar_dano,
-    verificar_vida_baixa
+    verificar_vida_baixa,
+    calcular_pontos,
+    tela_reparo,
+    iniciar_entrada
 )
+from src.sprites import pegar_sprite, Obstacle, Enemies, Bullet, DeathStar
 from src.dados import (
     salvar_recorde,
     carregar_recorde,
 )
 
-from src.sprites import pegar_sprite, Obstacle, Bullet, DeathStar
+# Banco de dados das perguntas
 
+perguntas = [
+    {
+        "pergunta": "O que armazena uma Matriz de tamanho 3x3?",
+        "opcoes": ["3 elementos", "6 elementos", "9 elementos", "0 elementos"],
+        "correta": 2
+    },
+    {
+        "pergunta": "O que acontece se tentarmos ler a posição 5 de um vetor de tamanho 3?",
+        "opcoes": ["Ele aumenta de tamanho sozinho", "Dá erro de índice fora do limite", "O programa adivinha o valor", "Ele apaga o vetor"],
+        "correta": 1
+    },
+    {
+        "pergunta": "Qual comando usamos para repetir um bloco de código enquanto uma condição for verdadeira?",
+        "opcoes": ["if", "while", "else", "print"],
+        "correta": 1
+    },
+    {
+        "pergunta": "Para que serve o comando 'if' no Python?",
+        "opcoes": ["Para repetir o código", "Para criar uma lista", "Para fazer uma pergunta/teste condicional", "Para fechar o jogo"],
+        "correta": 2
+    },
+    {
+        "pergunta": "Se o comando 'if' não for atendido, qual comando opcional roda logo em seguida?",
+        "opcoes": ["else", "while", "for", "import"],
+        "correta": 0
+    },
+    {
+        "pergunta": "Qual das opções abaixo é usada para criar uma lista vazia?",
+        "opcoes": ["lista = 0", "lista = []", "lista = 'vazia'", "lista = True"],
+        "correta": 1
+    },
+    {
+        "pergunta": "O que acontece se você criar um loop 'while True' sem nenhum comando para pará-lo?",
+        "opcoes": ["O computador desliga", "O loop roda apenas uma vez", "Gera um loop infinito e trava o programa", "O Python corrige sozinho"],
+        "correta": 2
+    },
+    {
+        "pergunta": "Qual estrutura é ideal para percorrer todos os elementos de uma lista um por um?",
+        "opcoes": ["import", "if", "else", "for"],
+        "correta": 3
+    },
+    {
+        "pergunta": "O que o comando 'print()' faz no Python?",
+        "opcoes": ["Exibe uma mensagem na tela/terminal", "Soma dois números", "Salva o jogo", "Deleta um arquivo"],
+        "correta": 0
+    },
+    {
+        "pergunta": "Qual o valor da variável 'x' após rodar: x = 5 + 3?",
+        "opcoes": ["5", "3", "53", "8"],
+        "correta": 3
+    }
+
+]
 
 def tela_fim_jogo(tela, fundo, relogio):
     """Mostra a tela de fim de jogo. Retorna True para reiniciar, False para sair."""
@@ -101,6 +160,30 @@ def desenhar_barra_vida(superficie, x, y, vidas_atuais, vidas_maximas=3, comprim
     pygame.draw.rect(superficie, cor_vida, rect_vida)
     pygame.draw.rect(superficie, cor_outline, rect_fundo, 2)
 
+def tela_loading(tela, fase_atual, relogio):
+    """Tela de loading/reparo entre as fases."""
+    fonte = pygame.font.Font(FONTE, 50)
+    texto = fonte.render(f"FASE {fase_atual} CONCLUIDA! Iniciando Sistemas...", True, BRANCO)
+    rect_texto = texto.get_rect(center=(LARGURA_TELA // 2, ALTURA_TELA // 2))
+    
+    tela.fill(PRETO)
+    tela.blit(texto, rect_texto)
+    pygame.display.flip()
+    
+    pygame.time.wait(2000)
+
+def tela_fase_cinema(tela, fase_atual):
+    fonte_grande = pygame.font.Font(FONTE, 80)
+    
+    tela.fill(PRETO)
+    
+    txt_fase = fonte_grande.render(f"FASE {fase_atual}", True, RED_ANTARES)
+    rect_fase = txt_fase.get_rect(center=(LARGURA_TELA // 2, ALTURA_TELA // 2))
+    
+    tela.blit(txt_fase, rect_fase)
+    pygame.display.flip()
+    
+    pygame.time.wait(1500)
 
 def executar_jogo():
     """Executa o loop principal do jogo e controla estado, colisões e pontuação."""
@@ -141,9 +224,15 @@ def executar_jogo():
 
     # Loop externo: cada volta e uma nova partida.
     jogando = True
+    fase_atual = 4
     while jogando:
         # --- Reset: variaveis que vivem apenas uma partida nascem do zero ---
         lista_obstaculos = []
+        lista_enemies = []
+        lista_lasers_enemies = []
+        lista_lasers_jogador = []
+
+        cooldown_tiro_jogador = 0
         contador_tempo = 0
         pontos = 0
         vidas = 100.0
@@ -151,22 +240,30 @@ def executar_jogo():
         death_star = None
         destino_x = 20
         velocidade_entrada = 3
-        jogador["rect"].y = (ALTURA_TELA - jogador["rect"].height) / 2
-        jogador["rect"].x = -jogador["rect"].width - 5
-        entrando = True
+        entrando = iniciar_entrada(jogador, ALTURA_TELA)
         ferramenta_coletada_na_fase = False
         ferramenta_na_tela = False
         ferramenta_rect = pygame.Rect(0, 0, 0, 0)
         ferramenta_velocidade = 5
         chances_perdidas = 0
-        lista_balas = []
-        cooldown_tiro = 0
+        ticks_pra_spawnar_ds = 5000
+
+        regras_fase = CONFIG_FASES[fase_atual]
+        enemies_restantes_para_nascer = regras_fase["total_enemies"]
+        total_enemies_da_fase = regras_fase["total_enemies"]
+        intervalo_spawn = regras_fase["intervalo_spawn"] * 1000
+        velocidade_enemy = regras_fase["vel_enemy"]
+
+        enemies_mortos = 0
+
+        ultimo_spawn_enemy = pygame.time.get_ticks()
+        inicio_fase = pygame.time.get_ticks()
+        perguntas_da_partida = list(perguntas)
 
         # Loop interno (partida): processa entrada, atualiza estado e renderiza.
         rodando = True
         while rodando:
             relogio.tick(FPS)
-            agora = pygame.time.get_ticks()
 
             for evento in pygame.event.get():
                 if evento.type == pygame.QUIT:
@@ -204,29 +301,98 @@ def executar_jogo():
                 jogador["rect"].y = limitar_valor(jogador["rect"].y, 0, ALTURA_TELA - jogador["rect"].height)
             
             teclas = pygame.key.get_pressed()
-            # Tiro
-            cooldown_tiro = max(0, cooldown_tiro - 1)
-            if teclas[pygame.K_SPACE] and cooldown_tiro == 0:
-                lista_balas.append(Bullet(jogador["rect"].right - 20, jogador["rect"].centery))
-                cooldown_tiro = 10
 
-            # Atualizar balas e colisão com asteroides
-            for bala in lista_balas[:]:
-                bala.atualizar()
+            if cooldown_tiro_jogador > 0:
+                cooldown_tiro_jogador -= 1
 
-                if bala.rect.x > LARGURA_TELA:
-                    lista_balas.remove(bala)
+            if teclas[pygame.K_SPACE] and cooldown_tiro_jogador == 0:
+               
+                novo_tiro = Bullet(jogador["rect"].right, jogador["rect"].centery)
+                lista_lasers_jogador.append(novo_tiro)
+                cooldown_tiro_jogador = 10
+
+            tempo_atual = pygame.time.get_ticks()
+
+            if enemies_restantes_para_nascer > 0:
+                if tempo_atual - ultimo_spawn_enemy >= intervalo_spawn:
+                    
+                    lista_enemies.append(Enemies(LARGURA_TELA, ALTURA_TELA, velocidade_enemy))
+                    enemies_restantes_para_nascer -= 1
+                    ultimo_spawn_enemy = tempo_atual 
+
+            for enemy in lista_enemies[:]:
+                enemy.atualizar(lista_lasers_enemies)
+
+                if verificar_colisao(jogador["rect"], enemy.rect):
+                    vidas = tomar_dano(vidas, 15.0) 
+                    lista_enemies.remove(enemy)
+                    enemies_restantes_para_nascer += 1 
                     continue
 
-                for obstaculo in lista_obstaculos[:]:
-                    if verificar_colisao(bala.rect, obstaculo.rect):
-                        lista_balas.remove(bala)
-                        lista_obstaculos.remove(obstaculo)
+                if enemy.rect.x < -enemy.rect.width:
+                    lista_enemies.remove(enemy)
+                    enemies_restantes_para_nascer += 1
+
+            for laser_en in lista_lasers_enemies[:]:
+                laser_en.atualizar()
+
+                if verificar_colisao(jogador["rect"], laser_en.rect):
+                    vidas = tomar_dano(vidas, 5.0) # Cada tiro tira 5% de vida
+                    lista_lasers_enemies.remove(laser_en)
+                    continue
+                
+                if laser_en.rect.x < -laser_en.rect.width:
+                    lista_lasers_enemies.remove(laser_en)
+
+            for tiro in lista_lasers_jogador[:]:
+                tiro.atualizar()
+                
+                if tiro.rect.x > LARGURA_TELA:
+                    lista_lasers_jogador.remove(tiro)
+                    continue
+                
+                for enemy in lista_enemies[:]:
+                    if verificar_colisao(tiro.rect, enemy.rect):
+                        pontos = calcular_pontos(pontos, 100)
+                        enemies_mortos += 1 
+                        lista_enemies.remove(enemy)
+                        if tiro in lista_lasers_jogador:
+                            lista_lasers_jogador.remove(tiro)
                         break
                 
-                if death_star is not None and verificar_colisao(death_star.hitbox, bala.rect):
-                    vidas_death_star = tomar_dano(vidas_death_star, bala.dano)
-                    lista_balas.remove(bala)
+                if death_star is not None and verificar_colisao(death_star.hitbox, tiro.rect):
+                    vidas_death_star = tomar_dano(vidas_death_star, tiro.dano)
+                    lista_lasers_jogador.remove(tiro)
+
+
+            if enemies_mortos >= total_enemies_da_fase:
+                tela_loading(tela, fase_atual, relogio)
+                fase_atual += 1 
+                
+                if fase_atual > 4:
+                    rodando = False
+                    fase_atual = 1 
+                else:
+                    tela_fase_cinema(tela, fase_atual)
+
+                    regras_fase = CONFIG_FASES[fase_atual]
+                    enemies_restantes_para_nascer = regras_fase["total_enemies"]
+                    total_enemies_da_fase = regras_fase["total_enemies"]
+                    intervalo_spawn = regras_fase["intervalo_spawn"] * 1000
+                    velocidade_enemy = regras_fase["vel_enemy"]
+
+                    lista_enemies.clear()
+                    lista_lasers_enemies.clear()
+                    lista_obstaculos.clear()
+
+                    enemies_mortos = 0
+                    ultimo_spawn_enemy = pygame.time.get_ticks()
+                    ferramenta_coletada_na_fase = False
+
+                    # Refaz a animação de entrada a cada nova fase
+                    entrando = iniciar_entrada(jogador, ALTURA_TELA)
+                    lista_lasers_jogador = []
+                    inicio_fase = pygame.time.get_ticks()
 
 
             contador_tempo += 1
@@ -234,7 +400,7 @@ def executar_jogo():
                 lista_obstaculos.append(Obstacle(LARGURA_TELA, ALTURA_TELA))
                 contador_tempo = 0
 
-            if agora >= 1000 and death_star is None:
+            if fase_atual == 4 and tempo_atual - inicio_fase >= ticks_pra_spawnar_ds and death_star is None:
                 death_star = DeathStar(LARGURA_TELA, ALTURA_TELA)
                 
 
@@ -254,11 +420,38 @@ def executar_jogo():
             if ferramenta_na_tela:
                 ferramenta_rect.x -= ferramenta_velocidade
                 
+                # Se o jogador pegar a ferramenta de reparo
                 if verificar_colisao(jogador["rect"], ferramenta_rect):
                     vidas = limitar_valor(vidas + 20.0, 0, 100.0)
                     ferramenta_coletada_na_fase = True
                     ferramenta_na_tela = False
+                    
+                    # 1. Desenha tudo na tela rapidamente para capturar a imagem de fundo
+                    tela.blit(imagem_original, (0, 0))
+                    tela.blit(jogador["imagem"], jogador["rect"])
+                    for obs in lista_obstaculos:
+                        obs.desenhar(tela)
+                    desenhar_barra_vida(tela, 20, 20, vidas, vidas_maximas=100)
+                    
+                    # Tira um print da tela do jogo para congelar no fundo do quiz
+                    print_jogo = tela.copy()
+                    
+                    # 2. Abre a janela do quiz passando todas as configurações necessárias
+                    acertou, questao_respondida = tela_reparo(
+                        tela, relogio, perguntas_da_partida, print_jogo,
+                        LARGURA_TELA, ALTURA_TELA, FPS, FONTE, BRANCO
+                    )
+                    
+                    # 3. Aplica as regras do resultado do quiz
+                    if acertou:
+                        vidas = limitar_valor(vidas + 20.0, 0, 100.0) # Ganha 20% de vida
+                        if questao_respondida in perguntas_da_partida:
+                            perguntas_da_partida.remove(questao_respondida) # Remove para não repetir
+                    else:
+                        # Se errou, não ganha vida e a pergunta continua na lista (pode repetir)
+                        pass
                 
+                # Se a ferramenta passar direto sem ser coletada, causa dano de 3%
                 elif ferramenta_rect.x < -ferramenta_rect.width:
                     ferramenta_na_tela = False
                     chances_perdidas += 1
@@ -275,6 +468,7 @@ def executar_jogo():
 
                 elif obstaculo.rect.y > ALTURA_TELA:
                     lista_obstaculos.remove(obstaculo)
+                    pontos += 1
 
             if jogador_perdeu(vidas):
                  
@@ -287,9 +481,16 @@ def executar_jogo():
             tela.blit(imagem_original, (fundo_x, 0))
             tela.blit(imagem_original, (fundo_x + LARGURA_TELA, 0))
 
+            for laser_en in lista_lasers_enemies:
+                laser_en.desenhar(tela)
+
+            for enemy in lista_enemies:
+                enemy.desenhar(tela)
+
+            for tiro in lista_lasers_jogador:
+                tiro.desenhar(tela)
+
             tela.blit(jogador["imagem"], jogador["rect"])
-            for bala in lista_balas:
-                bala.desenhar(tela)
 
             if ferramenta_na_tela:
                 tela.blit(ferramenta_image, ferramenta_rect)
@@ -304,19 +505,26 @@ def executar_jogo():
 
             desenhar_barra_vida(tela, 20, 20, vidas, vidas_maximas=100)
 
+            fonte_hud = pygame.font.Font(FONTE, 24)
+
+            texto_fase = fonte_hud.render(f"FASE {fase_atual}", True, BRANCO)
+            rect_fase = texto_fase.get_rect()
+           
+            rect_fase.topright = (LARGURA_TELA - 20, 20)
+            tela.blit(texto_fase, rect_fase)
+            
+            texto_alvo = fonte_hud.render(f"ALVOS: {enemies_mortos}/{total_enemies_da_fase}", True, BRANCO)
+            rect_alvo = texto_alvo.get_rect()
+            
+            rect_alvo.topright = (LARGURA_TELA - 20, rect_fase.bottom + 5)
+            tela.blit(texto_alvo, rect_alvo)
+
             pygame.display.flip()
 
         # A partida acabou. Se o jogador nao fechou a janela, mostra a tela de fim.
         if jogando:
             jogando = tela_fim_jogo(tela, imagem_original, relogio)
 
-    
-    
-    
-    
-    
-    
-    
     pygame.quit()
 
 if __name__ == "__main__":
