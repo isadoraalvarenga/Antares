@@ -20,6 +20,7 @@ WALLPAPER = "assets/imagens/starsky.jpg"
 
 CAMINHO_RECORDE = "data/recorde.txt"
 CAMINHO_SPRITES = "assets/imagens/spritesheet.bmp"
+CAMINHO_DEATH_STAR = "assets/imagens/death_star.png"
 FONTE = "assets/fontes/Starjout.ttf"
 
 CONFIG_FASES = {

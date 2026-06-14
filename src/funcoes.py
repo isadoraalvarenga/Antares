@@ -30,6 +30,14 @@ def verificar_colisao(retangulo_1, retangulo_2):
     return retangulo_1.colliderect(retangulo_2)
 
 
+def iniciar_entrada(jogador, ALTURA_TELA):
+    """Posiciona a nave fora da tela (à esquerda, centralizada no Y) para a
+    animação de entrada e retorna True para o estado 'entrando'."""
+    jogador["rect"].y = (ALTURA_TELA - jogador["rect"].height) / 2
+    jogador["rect"].x = -jogador["rect"].width - 5
+    return True
+
+
 def verificar_vida_baixa(vidas):
     return vidas <= 35.0
 

@@ -22,9 +22,10 @@ from src.funcoes import (
     tomar_dano,
     verificar_vida_baixa,
     calcular_pontos,
-    tela_reparo
+    tela_reparo,
+    iniciar_entrada
 )
-from src.sprites import pegar_sprite, Obstacle, Enemies, Bullet
+from src.sprites import pegar_sprite, Obstacle, Enemies, Bullet, DeathStar
 from src.dados import (
     salvar_recorde,
     carregar_recorde,
@@ -145,8 +146,9 @@ def tela_fim_jogo(tela, fundo, relogio):
         pygame.display.flip()
 
 
-def desenhar_barra_vida(superficie, x, y, vidas_atuais, vidas_maximas=3):
-    comprimento_barra = 150
+
+
+def desenhar_barra_vida(superficie, x, y, vidas_atuais, vidas_maximas=3, comprimento_barra = 150, cor_vida = (0, 255, 0), cor_fundo = (255, 0, 0), cor_outline = (255, 255, 255)):
     altura_barra = 15
     proporcao = max(0, vidas_atuais) / vidas_maximas
     largura_vida = int(comprimento_barra * proporcao)
@@ -154,9 +156,9 @@ def desenhar_barra_vida(superficie, x, y, vidas_atuais, vidas_maximas=3):
     rect_fundo = pygame.Rect(x, y, comprimento_barra, altura_barra)
     rect_vida = pygame.Rect(x, y, largura_vida, altura_barra)
     
-    pygame.draw.rect(superficie, (255, 0, 0), rect_fundo)
-    pygame.draw.rect(superficie, (0, 255, 0), rect_vida)
-    pygame.draw.rect(superficie, (255, 255, 255), rect_fundo, 2)
+    pygame.draw.rect(superficie, cor_fundo, rect_fundo)
+    pygame.draw.rect(superficie, cor_vida, rect_vida)
+    pygame.draw.rect(superficie, cor_outline, rect_fundo, 2)
 
 def tela_loading(tela, fase_atual, relogio):
     """Tela de loading/reparo entre as fases."""
@@ -206,7 +208,7 @@ def executar_jogo():
     # 2. Criando a estrutura de Sprites usando Dicionários
     jogador = {
         "imagem": player_image,
-        "rect": player_image.get_rect(topleft=(100, 100))
+        "rect": player_image.get_rect()
     }
 
     FREQUENCIA_ASTEROIDE = 40
@@ -222,7 +224,7 @@ def executar_jogo():
 
     # Loop externo: cada volta e uma nova partida.
     jogando = True
-    fase_atual = 1
+    fase_atual = 4
     while jogando:
         # --- Reset: variaveis que vivem apenas uma partida nascem do zero ---
         lista_obstaculos = []
@@ -234,14 +236,17 @@ def executar_jogo():
         contador_tempo = 0
         pontos = 0
         vidas = 100.0
+        vidas_death_star = 200
+        death_star = None
+        destino_x = 20
+        velocidade_entrada = 3
+        entrando = iniciar_entrada(jogador, ALTURA_TELA)
         ferramenta_coletada_na_fase = False
-        jogador["rect"].topleft = (100, 100)
-
-
         ferramenta_na_tela = False
         ferramenta_rect = pygame.Rect(0, 0, 0, 0)
         ferramenta_velocidade = 5
         chances_perdidas = 0
+        ticks_pra_spawnar_ds = 5000
 
         regras_fase = CONFIG_FASES[fase_atual]
         enemies_restantes_para_nascer = regras_fase["total_enemies"]
@@ -252,6 +257,7 @@ def executar_jogo():
         enemies_mortos = 0
 
         ultimo_spawn_enemy = pygame.time.get_ticks()
+        inicio_fase = pygame.time.get_ticks()
         perguntas_da_partida = list(perguntas)
 
         # Loop interno (partida): processa entrada, atualiza estado e renderiza.
@@ -266,11 +272,34 @@ def executar_jogo():
                 if evento.type == pygame.KEYDOWN and evento.key == pygame.K_ESCAPE:
                     rodando = False
 
-            
+
             fundo_x -= velocidade_fundo
             if fundo_x <= -LARGURA_TELA:
                 fundo_x = 0
 
+            if entrando:
+                # Fase de entrada: desliza para a direita, sem teclado nem clamp
+                jogador["rect"].x += velocidade_entrada
+                if jogador["rect"].x >= destino_x:
+                    jogador["rect"].x = destino_x
+                    entrando = False
+            else:
+                teclas = pygame.key.get_pressed()
+
+                # Movimentação alterando direto os eixos X e Y do retângulo do jogador
+                if teclas[pygame.K_LEFT]:
+                    jogador["rect"].x -= velocidade
+                if teclas[pygame.K_RIGHT]:
+                    jogador["rect"].x += velocidade
+                if teclas[pygame.K_UP]:
+                    jogador["rect"].y -= velocidade
+                if teclas[pygame.K_DOWN]:
+                    jogador["rect"].y += velocidade
+
+                # Limitando o jogador dentro das bordas da tela usando as propriedades do Rect
+                jogador["rect"].x = limitar_valor(jogador["rect"].x, 0, LARGURA_TELA - jogador["rect"].width)
+                jogador["rect"].y = limitar_valor(jogador["rect"].y, 0, ALTURA_TELA - jogador["rect"].height)
+            
             teclas = pygame.key.get_pressed()
 
             if cooldown_tiro_jogador > 0:
@@ -281,21 +310,6 @@ def executar_jogo():
                 novo_tiro = Bullet(jogador["rect"].right, jogador["rect"].centery)
                 lista_lasers_jogador.append(novo_tiro)
                 cooldown_tiro_jogador = 10
-
-            # Movimentação alterando direto os eixos X e Y do retângulo do jogador
-            if teclas[pygame.K_LEFT]:
-                jogador["rect"].x -= velocidade
-            if teclas[pygame.K_RIGHT]:
-                jogador["rect"].x += velocidade
-            if teclas[pygame.K_UP]:
-                jogador["rect"].y -= velocidade
-            if teclas[pygame.K_DOWN]:
-
-                jogador["rect"].y += velocidade
-
-            # Limitando o jogador dentro das bordas da tela usando as propriedades do Rect
-            jogador["rect"].x = limitar_valor(jogador["rect"].x, 0, LARGURA_TELA - jogador["rect"].width)
-            jogador["rect"].y = limitar_valor(jogador["rect"].y, 0, ALTURA_TELA - jogador["rect"].height)
 
             tempo_atual = pygame.time.get_ticks()
 
@@ -345,6 +359,11 @@ def executar_jogo():
                         if tiro in lista_lasers_jogador:
                             lista_lasers_jogador.remove(tiro)
                         break
+                
+                if death_star is not None and verificar_colisao(death_star.hitbox, tiro.rect):
+                    vidas_death_star = tomar_dano(vidas_death_star, tiro.dano)
+                    lista_lasers_jogador.remove(tiro)
+
 
             if enemies_mortos >= total_enemies_da_fase:
                 tela_loading(tela, fase_atual, relogio)
@@ -370,10 +389,26 @@ def executar_jogo():
                     ultimo_spawn_enemy = pygame.time.get_ticks()
                     ferramenta_coletada_na_fase = False
 
+                    # Refaz a animação de entrada a cada nova fase
+                    entrando = iniciar_entrada(jogador, ALTURA_TELA)
+                    lista_lasers_jogador = []
+                    inicio_fase = pygame.time.get_ticks()
+
+
             contador_tempo += 1
             if contador_tempo >= FREQUENCIA_ASTEROIDE:
                 lista_obstaculos.append(Obstacle(LARGURA_TELA, ALTURA_TELA))
                 contador_tempo = 0
+
+            if fase_atual == 4 and tempo_atual - inicio_fase >= ticks_pra_spawnar_ds and death_star is None:
+                death_star = DeathStar(LARGURA_TELA, ALTURA_TELA)
+                
+
+            if death_star is not None:
+                death_star.atualizar()
+                # Feixe do superlaser: encostou no jogador, morreu.
+                if death_star.laser_rect is not None and verificar_colisao(jogador["rect"], death_star.laser_rect):
+                    vidas = 0
 
             if verificar_vida_baixa(vidas) and not ferramenta_na_tela and not ferramenta_coletada_na_fase:
                 if random.random() < 0.005:
@@ -463,6 +498,11 @@ def executar_jogo():
             for obstaculo in lista_obstaculos:
                 obstaculo.desenhar(tela)
 
+            if death_star is not None and vidas_death_star > 0:
+                death_star.desenhar(tela)
+                death_star.desenhar_laser(tela)
+                desenhar_barra_vida(tela, 10, ALTURA_TELA - 35, vidas_death_star, 200, LARGURA_TELA - 20, (255, 0, 0), (0, 0, 0), (118, 50, 1))
+
             desenhar_barra_vida(tela, 20, 20, vidas, vidas_maximas=100)
 
             fonte_hud = pygame.font.Font(FONTE, 24)
@@ -485,13 +525,6 @@ def executar_jogo():
         if jogando:
             jogando = tela_fim_jogo(tela, imagem_original, relogio)
 
-    
-    
-    
-    
-    
-    
-    
     pygame.quit()
 
 if __name__ == "__main__":
