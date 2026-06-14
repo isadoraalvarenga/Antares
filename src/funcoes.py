@@ -27,6 +27,5 @@ def verificar_colisao(retangulo_1, retangulo_2):
     return retangulo_1.colliderect(retangulo_2)
 
 def verificar_vida_baixa(vidas):
-    """Regra 6: Ativa quando a barra de vida está abaixo de 30%."""
-    if vidas == 1:
-        return vidas - (vidas * 0.3)
+    """Retorna True se a vida estiver em 35% ou menos."""
+    return vidas <= 35.0

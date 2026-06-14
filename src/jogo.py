@@ -18,12 +18,15 @@ from src.funcoes import (
     limitar_valor,
     verificar_colisao,
     tomar_dano,
+    verificar_vida_baixa
 )
-from src.sprites import pegar_sprite, Obstacle, DeathStar
 from src.dados import (
     salvar_recorde,
     carregar_recorde,
 )
+
+from src.sprites import pegar_sprite, Obstacle, Bullet, DeathStar
+
 
 def tela_fim_jogo(tela, fundo, relogio):
     """Mostra a tela de fim de jogo. Retorna True para reiniciar, False para sair."""
@@ -143,7 +146,7 @@ def executar_jogo():
         lista_obstaculos = []
         contador_tempo = 0
         pontos = 0
-        vidas = 3
+        vidas = 100.0
         vidas_death_star = 5
         death_star = None
         destino_x = 20
@@ -151,10 +154,13 @@ def executar_jogo():
         jogador["rect"].y = (ALTURA_TELA - jogador["rect"].height) / 2
         jogador["rect"].x = -jogador["rect"].width - 5
         entrando = True
+        ferramenta_coletada_na_fase = False
         ferramenta_na_tela = False
         ferramenta_rect = pygame.Rect(0, 0, 0, 0)
         ferramenta_velocidade = 5
         chances_perdidas = 0
+        lista_balas = []
+        cooldown_tiro = 0
 
         # Loop interno (partida): processa entrada, atualiza estado e renderiza.
         rodando = True
@@ -196,20 +202,41 @@ def executar_jogo():
                 # Limitando o jogador dentro das bordas da tela usando as propriedades do Rect
                 jogador["rect"].x = limitar_valor(jogador["rect"].x, 0, LARGURA_TELA - jogador["rect"].width)
                 jogador["rect"].y = limitar_valor(jogador["rect"].y, 0, ALTURA_TELA - jogador["rect"].height)
+            
+            teclas = pygame.key.get_pressed()
+            # Tiro
+            cooldown_tiro = max(0, cooldown_tiro - 1)
+            if teclas[pygame.K_SPACE] and cooldown_tiro == 0:
+                lista_balas.append(Bullet(jogador["rect"].right, jogador["rect"].centery))
+                cooldown_tiro = 10
+
+            # Atualizar balas e colisão com asteroides
+            for bala in lista_balas[:]:
+                bala.atualizar()
+
+                if bala.rect.x > LARGURA_TELA:
+                    lista_balas.remove(bala)
+                    continue
+
+                for obstaculo in lista_obstaculos[:]:
+                    if verificar_colisao(bala.rect, obstaculo.rect):
+                        lista_balas.remove(bala)
+                        lista_obstaculos.remove(obstaculo)
+                        break
 
             contador_tempo += 1
             if contador_tempo >= FREQUENCIA_ASTEROIDE:
                 lista_obstaculos.append(Obstacle(LARGURA_TELA, ALTURA_TELA))
                 contador_tempo = 0
 
-            if agora >= 2000 and death_star is None:
+            if agora >= 10000 and death_star is None:
                 death_star = DeathStar(LARGURA_TELA, ALTURA_TELA)
                 
 
             if death_star is not None:
                 death_star.atualizar()
 
-            if vidas <= 1.0 and not ferramenta_na_tela:
+            if verificar_vida_baixa(vidas) and not ferramenta_na_tela and not ferramenta_coletada_na_fase:
                 if random.random() < 0.005:
                     ferramenta_rect = ferramenta_image.get_rect()
                     ferramenta_rect.x = LARGURA_TELA 
@@ -220,26 +247,30 @@ def executar_jogo():
                 ferramenta_rect.x -= ferramenta_velocidade
                 
                 if verificar_colisao(jogador["rect"], ferramenta_rect):
-                    vidas = limitar_valor(vidas + 0.20, 0, 3.0)  
+                    vidas = limitar_valor(vidas + 20.0, 0, 100.0)
+                    ferramenta_coletada_na_fase = True
                     ferramenta_na_tela = False
                 
                 elif ferramenta_rect.x < -ferramenta_rect.width:
                     ferramenta_na_tela = False
-                    vidas = tomar_dano(vidas, 0.03)
+                    chances_perdidas += 1
+                    if chances_perdidas >= 3:
+                        vidas = tomar_dano(vidas, 3.0)
+                        chances_perdidas = 0
 
             for obstaculo in lista_obstaculos[:]:
                 obstaculo.atualizar()
 
                 if verificar_colisao(jogador["rect"], obstaculo.rect):
-                    vidas = tomar_dano(vidas, 1)
+                    vidas = tomar_dano(vidas, obstaculo.dano)
                     lista_obstaculos.remove(obstaculo)
 
                 elif obstaculo.rect.y > ALTURA_TELA:
                     lista_obstaculos.remove(obstaculo)
 
-            # Regras de fim de jogo e recorde
             if jogador_perdeu(vidas):
-                rodando = False
+                 
+                 rodando = False
 
             if pontos > recorde:
                 recorde = pontos
@@ -249,6 +280,8 @@ def executar_jogo():
             tela.blit(imagem_original, (fundo_x + LARGURA_TELA, 0))
 
             tela.blit(jogador["imagem"], jogador["rect"])
+            for bala in lista_balas:
+                bala.desenhar(tela)
 
             if ferramenta_na_tela:
                 tela.blit(ferramenta_image, ferramenta_rect)
@@ -260,7 +293,7 @@ def executar_jogo():
                 death_star.desenhar(tela)
                 desenhar_barra_vida(tela, 10, ALTURA_TELA - 35, vidas_death_star, 5, LARGURA_TELA - 20, (255, 0, 0), (0, 0, 0), (118, 50, 1))
 
-            desenhar_barra_vida(tela, 20, 20, vidas, vidas_maximas=3)
+            desenhar_barra_vida(tela, 20, 20, vidas, vidas_maximas=100)
 
             pygame.display.flip()
 
@@ -268,6 +301,13 @@ def executar_jogo():
         if jogando:
             jogando = tela_fim_jogo(tela, imagem_original, relogio)
 
+    
+    
+    
+    
+    
+    
+    
     pygame.quit()
 
 if __name__ == "__main__":

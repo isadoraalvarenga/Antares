@@ -68,8 +68,18 @@ class DeathStar:
 
 
 class Obstacle:
+    TIPOS = [
+        (0.6, 5),   # pequeno → -5%
+        (1.0, 10),  # médio   → -10%
+        (1.5, 15),  # grande  → -15%
+    ]
+
     def __init__(self, ancho_tela=800, alto_tela=600):
-        self.image = pegar_sprite("assets/imagens/asteroide_sheet.png", x=0, y=0, width=48, height=48, scale=1)
+        scale, self.dano = random.choice(self.TIPOS)
+        self.image = pegar_sprite(
+            "assets/imagens/asteroide_sheet.png",
+            x=0, y=0, width=48, height=48, scale=scale
+        )
         
         self.rect = self.image.get_rect()
         
@@ -89,3 +99,19 @@ class Obstacle:
     def desenhar(self, tela):
         # Desenha o obstáculo na tela
         tela.blit(self.image, self.rect)
+
+class Bullet:
+    def __init__(self, x, y):
+        self.image = pygame.image.load("assets/imagens/bullet.png").convert_alpha()
+        # Reduz o tamanho da bala
+        self.image = pygame.transform.scale(self.image, (100, 84))
+        self.rect = self.image.get_rect(midleft=(x, y))
+        self.velocidade = 15
+
+    def atualizar(self):
+        self.rect.x += self.velocidade
+
+    def desenhar(self, tela):
+        tela.blit(self.image, self.rect)
+
+    
