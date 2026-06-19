@@ -231,7 +231,8 @@ def executar_jogo():
     player_image = pegar_sprite("assets/imagens/millenium_falcon_fr.bmp", x=0, y=0, width=118, height=32, scale=1)
 
     # Ferramenta de Reparo
-    ferramenta_image = pegar_sprite(CAMINHO_SPRITES, x=900, y=690, width=200, height=200, scale=0.15)
+    ferramenta_image = pygame.image.load("assets/imagens/item-de-reparo.png").convert_alpha()
+    ferramenta_image = pygame.transform.scale(ferramenta_image, (90, 90))
 
     # 2. Criando a estrutura de Sprites usando Dicionários
     jogador = {
@@ -456,7 +457,6 @@ def executar_jogo():
                 
                 # Se o jogador pegar a ferramenta de reparo
                 if verificar_colisao(jogador["rect"], ferramenta_rect):
-                    vidas = limitar_valor(vidas + 20.0, 0, 100.0)
                     ferramenta_coletada_na_fase = True
                     ferramenta_na_tela = False
                     
