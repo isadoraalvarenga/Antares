@@ -145,3 +145,4 @@ def tela_reparo(tela, relogio, perguntas_disponiveis, print_jogo, LARGURA_TELA, 
             pygame.display.flip()
         
     return acertou, questao
+
