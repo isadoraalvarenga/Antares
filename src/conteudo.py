@@ -89,4 +89,4 @@ FALAS_DEATH_STAR = [
     "Lá está. Não desvia o olhar, mas também não subestima o que você tá vendo.",
     "Sente esse silêncio? É assim que ela anuncia que chegou.",
     "Essa luz que você vê não é luz de verdade. É vazio se fingindo de estrela.",
-]
+] 
