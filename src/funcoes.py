@@ -47,13 +47,13 @@ def tela_reparo(tela, relogio, perguntas_disponiveis, print_jogo, LARGURA_TELA, 
     if not perguntas_disponiveis:
         return False, None
     
-    fonte_pergunta = pygame.font.SysFont("Arial", 18, bold=True)
-    fonte_opcao = pygame.font.SysFont("Courier New", 16)
-    fonte_aviso = pygame.font.SysFont("Arial", 22, bold=True)
+    fonte_pergunta = pygame.font.SysFont("Arial", 22, bold=True)
+    fonte_opcao = pygame.font.SysFont("Courier New", 18)
+    fonte_aviso = pygame.font.SysFont("Arial", 26, bold=True)
     
     questao = random.choice(perguntas_disponiveis)
     
-    largura_janela, altura_janela = 600, 440
+    largura_janela, altura_janela = 920, 600
     x_janela = (LARGURA_TELA - largura_janela) // 2
     y_janela = (ALTURA_TELA - altura_janela) // 2
     rect_janela = pygame.Rect(x_janela, y_janela, largura_janela, altura_janela)
@@ -73,7 +73,7 @@ def tela_reparo(tela, relogio, perguntas_disponiveis, print_jogo, LARGURA_TELA, 
         linhas.append(linha_atual)
         
         offset_y = 0
-        for linha in linhas:
+        for linha in linhas: # <--- CORRIGIDO AQUI (de 'lines' para 'linhas')
             render_linha = fonte.render(linha.strip(), True, cor)
             superficie.blit(render_linha, (x, y + offset_y))
             offset_y += fonte.get_linesize()
@@ -81,7 +81,7 @@ def tela_reparo(tela, relogio, perguntas_disponiveis, print_jogo, LARGURA_TELA, 
 
     retangulos_opcoes = []
     for i in range(len(questao["opcoes"])):
-        rect_opcao = pygame.Rect(x_janela + 40, y_janela + 150 + (i * 65), largura_janela - 80, 50)
+        rect_opcao = pygame.Rect(x_janela + 60, y_janela + 220 + (i * 75), largura_janela - 120, 55)
         retangulos_opcoes.append(rect_opcao)
 
     respondendo = True
@@ -90,7 +90,7 @@ def tela_reparo(tela, relogio, perguntas_disponiveis, print_jogo, LARGURA_TELA, 
     imagem_fundo_reparo = pygame.image.load("assets/imagens/imagem-tela-de-reparo.png").convert_alpha()
     imagem_fundo_reparo = pygame.transform.scale(imagem_fundo_reparo, (largura_janela, altura_janela))
 
-    def desenhar_botao_pixel_art(superficie, rect, cor_fundo, cor_borda_escura, cor_borda_clara, espessura=3):
+    def desenhar_botao_pixel_art(superficie, rect, cor_fundo, cor_borda_escura, cor_borda_clara, espessura=4):
         # Corpo principal do botão
         pygame.draw.rect(superficie, cor_fundo, rect)
         
@@ -108,8 +108,8 @@ def tela_reparo(tela, relogio, perguntas_disponiveis, print_jogo, LARGURA_TELA, 
     COR_BORDA_CLARA = (0, 180, 255)
     COR_HOVER_CLARA = (0, 255, 200)
 
-    largura_caixa_pergunta, altura_caixa_pergunta = largura_janela - 60, 100
-    rect_pergunta = pygame.Rect(x_janela + 30, y_janela + 30, largura_caixa_pergunta, altura_caixa_pergunta)
+    largura_caixa_pergunta, altura_caixa_pergunta = largura_janela - 120, 130
+    rect_pergunta = pygame.Rect(x_janela + 60, y_janela + 40, largura_caixa_pergunta, altura_caixa_pergunta)
 
     while respondendo:
         relogio.tick(FPS)
@@ -151,7 +151,7 @@ def tela_reparo(tela, relogio, perguntas_disponiveis, print_jogo, LARGURA_TELA, 
             tela.blit(imagem_fundo_reparo, rect_janela.topleft)
             
             desenhar_botao_pixel_art(tela, rect_pergunta, COR_FUNDO_BTN, COR_BORDA_ESCURA, COR_BORDA_CLARA)
-            desenhar_texto_multi_linha(tela, questao["pergunta"], fonte_pergunta, BRANCO, rect_pergunta.x + 20, rect_pergunta.y + 20, largura_caixa_pergunta - 40)
+            desenhar_texto_multi_linha(tela, questao["pergunta"], fonte_pergunta, BRANCO, rect_pergunta.x + 25, rect_pergunta.y + 25, largura_caixa_pergunta - 50)
             
             letras_prefixo = ["A) ", "B) ", "C) ", "D) "]
             for i, opcao in enumerate(questao["opcoes"]):
@@ -166,7 +166,7 @@ def tela_reparo(tela, relogio, perguntas_disponiveis, print_jogo, LARGURA_TELA, 
                 texto_opcao = fonte_opcao.render(texto_formatado, True, BRANCO)
                 
                 y_centro_texto = rect_opcao.y + (rect_opcao.height - texto_opcao.get_height()) // 2
-                tela.blit(texto_opcao, (rect_opcao.x + 20, y_centro_texto))
+                tela.blit(texto_opcao, (rect_opcao.x + 25, y_centro_texto))
                 
             pygame.display.flip()
         
