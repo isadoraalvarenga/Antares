@@ -32,7 +32,10 @@ def pegar_sprite(local_arquivo, x, y, width, height, scale=1):
     return image
 
 class BlackHole:
-    chance = 0.5
+    gravity = 120_000
+    softening = 24
+    event_horizon = 18
+    max_pull = 35
     FPS = 12
     def __init__(self, x, y, num_frames=12, fps_jogo=60, scale=1):
         spritesheet = pygame.image.load(CAMINHO_BLACK_HOLE).convert_alpha()
@@ -65,6 +68,26 @@ class BlackHole:
             self.ticks_counter = 0
 
             self.frame_to_use = (self.frame_to_use + 1) % len(self.frames)
+
+    def aplicar(self, rect):
+        """Puxa um rect em direcao ao centro do buraco negro (campo de succao).
+        Retorna True se cruzou o horizonte de eventos (foi engolido)."""
+        centro_x, centro_y = self.rect.center
+        dx = centro_x - rect.centerx
+        dy = centro_y - rect.centery
+        distancia = math.hypot(dx, dy)
+
+        if distancia <= self.event_horizon:
+            return True
+
+        # Lei do inverso do quadrado, com softening perto do centro e teto de forca.
+        distancia_efetiva = max(self.softening, distancia)
+        forca = self.gravity / (distancia_efetiva * distancia_efetiva)
+        forca = min(forca, self.max_pull)
+
+        rect.x += forca * (dx / distancia)
+        rect.y += forca * (dy / distancia)
+        return False
 
     def desenhar(self, tela):
         tela.blit(self.frames[self.frame_to_use], self.rect)

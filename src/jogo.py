@@ -454,7 +454,46 @@ def executar_jogo():
 
             if black_hole is not None:
                 black_hole.atualizar()
-                
+
+                # Atracao gravitacional: inimigos, asteroides e jogador (NUNCA tiros).
+                for enemy in lista_enemies[:]:
+                    if black_hole.aplicar(enemy.rect):
+                        lista_enemies.remove(enemy)
+                        enemies_restantes_para_nascer += 1  # engolido sem morrer: respawna
+
+                for obstaculo in lista_obstaculos[:]:
+                    if black_hole.aplicar(obstaculo.rect):
+                        lista_obstaculos.remove(obstaculo)
+
+                # Jogador engolido: volta pra fase 1 sem game over (rewind da partida).
+                if not entrando and black_hole.aplicar(jogador["rect"]):
+                    if fase_atual == 4:
+                        sons_jogo["fase_deathstar"].stop()
+
+                    fase_atual = 1
+                    regras_fase = CONFIG_FASES[fase_atual]
+                    spawn_black_hole = sortear_chance(CONFIG_FASES[fase_atual]["chance_black_hole"])
+                    enemies_restantes_para_nascer = regras_fase["total_enemies"]
+                    total_enemies_da_fase = regras_fase["total_enemies"]
+                    intervalo_spawn = regras_fase["intervalo_spawn"] * 1000
+                    velocidade_enemy = regras_fase["vel_enemy"]
+
+                    lista_enemies.clear()
+                    lista_lasers_enemies.clear()
+                    lista_obstaculos.clear()
+                    lista_lasers_jogador.clear()
+
+                    vidas = 100.0
+                    enemies_mortos = 0
+                    black_hole = None
+                    death_star = None
+                    ferramenta_na_tela = False
+                    ferramenta_coletada_na_fase = False
+                    ultimo_spawn_enemy = pygame.time.get_ticks()
+                    inicio_fase = pygame.time.get_ticks()
+                    entrando = iniciar_entrada(jogador, ALTURA_TELA)
+                    continue
+
 
             if death_star is not None:
                 death_star.atualizar()
