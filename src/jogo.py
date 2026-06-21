@@ -24,12 +24,13 @@ from src.funcoes import (
     calcular_pontos,
     tela_reparo,
     iniciar_entrada,
+    sortear_chance,
     iniciar_legenda,
     desenhar_legenda_digitada,
     sons_jogo,
 )
 
-from src.sprites import pegar_sprite, Obstacle, Enemies, Bullet, DeathStar
+from src.sprites import pegar_sprite, Obstacle, Enemies, Bullet, DeathStar, BlackHole
 from src.dados import (
     salvar_recorde,
     carregar_recorde,
@@ -193,6 +194,7 @@ def executar_jogo():
     }
 
     FREQUENCIA_ASTEROIDE = 40
+    BLACK_HOLE_SCALE_MAX = 6
 
     velocidade = 10
     fundo_x = 0
@@ -219,6 +221,10 @@ def executar_jogo():
         vidas = 100.0
         vidas_death_star = 200
         death_star = None
+        black_hole = None
+        spawn_black_hole = False
+        # Tamanho do buraco negro: sorteado uma unica vez por partida.
+        scale_black_hole = random.randint(2, BLACK_HOLE_SCALE_MAX)
         venceu = False
         destino_x = 20
         velocidade_entrada = 3
@@ -380,6 +386,7 @@ def executar_jogo():
                         sons_jogo["fase_deathstar"].play(-1)
 
                 regras_fase = CONFIG_FASES[fase_atual]
+                spawn_black_hole = sortear_chance(CONFIG_FASES[fase_atual]["chance_black_hole"])
                 enemies_restantes_para_nascer = regras_fase["total_enemies"]
                 total_enemies_da_fase = regras_fase["total_enemies"]
                 intervalo_spawn = regras_fase["intervalo_spawn"] * 1000
@@ -388,6 +395,10 @@ def executar_jogo():
                 lista_enemies.clear()
                 lista_lasers_enemies.clear()
                 lista_obstaculos.clear()
+
+                # Buraco negro pertence a fase que acabou: para o som e descarta.
+                sons_jogo["black_hole"].stop()
+                black_hole = None
 
                 enemies_mortos = 0
                 ultimo_spawn_enemy = pygame.time.get_ticks()
@@ -406,11 +417,67 @@ def executar_jogo():
                 lista_obstaculos.append(Obstacle(LARGURA_TELA, ALTURA_TELA))
                 contador_tempo = 0
 
-            if fase_atual == 4 and tempo_atual - inicio_fase >= ticks_pra_spawnar_ds and death_star is None:
+            if fase_atual == 4 and tempo_atual - inicio_fase >= ticks_pra_spawnar_ds and death_star == None:
                 death_star = DeathStar(LARGURA_TELA, ALTURA_TELA)
-        
+
                 iniciar_legenda(estado_legenda, random.choice(FALAS_DEATH_STAR), sons_jogo["antares"])
-                
+
+            if fase_atual >= 2 and spawn_black_hole and black_hole == None:
+                black_hole = BlackHole(LARGURA_TELA, 0, 12, 60, scale_black_hole)
+                # Y sorteado mantendo o sprite inteiro dentro da tela.
+                metade_altura = black_hole.rect.height // 2
+                black_hole.rect.centery = random.randint(metade_altura, ALTURA_TELA - metade_altura)
+                # Zumbido em loop enquanto o buraco negro estiver na tela.
+                sons_jogo["black_hole"].play(-1)
+
+            if black_hole is not None:
+                black_hole.atualizar()
+
+                # Atracao gravitacional: inimigos, asteroides e jogador (NUNCA tiros).
+                for enemy in lista_enemies[:]:
+                    if black_hole.aplicar(enemy.rect):
+                        lista_enemies.remove(enemy)
+                        enemies_restantes_para_nascer += 1  # engolido sem morrer: respawna
+
+                for obstaculo in lista_obstaculos[:]:
+                    if black_hole.aplicar(obstaculo.rect):
+                        lista_obstaculos.remove(obstaculo)
+
+                # Jogador engolido: volta pra fase 1 sem game over (rewind da partida).
+                if not entrando and black_hole.aplicar(jogador["rect"]):
+                    sons_jogo["black_hole"].stop()
+                    if fase_atual == 4:
+                        sons_jogo["fase_deathstar"].stop()
+
+                    fase_atual = 1
+                    regras_fase = CONFIG_FASES[fase_atual]
+                    spawn_black_hole = sortear_chance(CONFIG_FASES[fase_atual]["chance_black_hole"])
+                    enemies_restantes_para_nascer = regras_fase["total_enemies"]
+                    total_enemies_da_fase = regras_fase["total_enemies"]
+                    intervalo_spawn = regras_fase["intervalo_spawn"] * 1000
+                    velocidade_enemy = regras_fase["vel_enemy"]
+
+                    lista_enemies.clear()
+                    lista_lasers_enemies.clear()
+                    lista_obstaculos.clear()
+                    lista_lasers_jogador.clear()
+
+                    vidas = 100.0
+                    enemies_mortos = 0
+                    black_hole = None
+                    death_star = None
+                    ferramenta_na_tela = False
+                    ferramenta_coletada_na_fase = False
+                    ultimo_spawn_enemy = pygame.time.get_ticks()
+                    inicio_fase = pygame.time.get_ticks()
+                    entrando = iniciar_entrada(jogador, ALTURA_TELA)
+                    continue
+
+                # Saiu pela esquerda: descarta e sorteia a chance de voltar.
+                if black_hole.fora_da_tela:
+                    sons_jogo["black_hole"].stop()
+                    black_hole = None
+                    spawn_black_hole = sortear_chance(CONFIG_FASES[fase_atual]["chance_black_hole"])
 
             if death_star is not None:
                 death_star.atualizar()
@@ -528,6 +595,9 @@ def executar_jogo():
             for obstaculo in lista_obstaculos:
                 obstaculo.desenhar(tela)
 
+            if black_hole is not None:
+                black_hole.desenhar(tela)
+
             if death_star is not None and vidas_death_star > 0:
                 death_star.desenhar(tela)
                 death_star.desenhar_laser(tela)
@@ -553,7 +623,11 @@ def executar_jogo():
 
             pygame.display.flip()
 
-        # A partida acabou. Se o jogador nao fechou a janela, mostra a tela de fim.
+        # A partida acabou (vitoria, game over ou janela fechada): garante que o
+        # zumbido do buraco negro nao vaze para a tela de fim.
+        sons_jogo["black_hole"].stop()
+
+        # Se o jogador nao fechou a janela, mostra a tela de fim.
         if jogando:
             if venceu:
                 sons_jogo["conclusao_jogo"].play()

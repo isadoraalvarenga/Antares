@@ -1,7 +1,7 @@
 import pygame
 import random
 import math
-from src.config import CAMINHO_DEATH_STAR
+from src.config import CAMINHO_DEATH_STAR, CAMINHO_BLACK_HOLE
 
 def pegar_sprite(local_arquivo, x, y, width, height, scale=1):
     """Corta um único elemento de uma spritesheet BMP e remove o fundo."""
@@ -30,6 +30,77 @@ def pegar_sprite(local_arquivo, x, y, width, height, scale=1):
         image = pygame.transform.scale(image, (novo_largura, novo_altura))
         
     return image
+
+class BlackHole:
+    gravity = 120_000
+    softening = 24
+    event_horizon = 18
+    max_pull = 35
+    FPS = 12
+    def __init__(self, x, y, num_frames=12, fps_jogo=60, scale=1, velocidade=2):
+        spritesheet = pygame.image.load(CAMINHO_BLACK_HOLE).convert_alpha()
+
+        sheet_height = spritesheet.get_height()
+        frame_width = spritesheet.get_width() // num_frames
+
+        self.frames = []
+        for i in range(num_frames):
+            frame = pygame.Surface((frame_width, sheet_height), pygame.SRCALPHA)
+            frame.blit(spritesheet, (0, 0), (i * frame_width, 0, frame_width, sheet_height))
+
+            if scale != 1:
+                frame = pygame.transform.scale(
+                    frame, (int(frame_width * scale), int(sheet_height * scale))
+                )
+            
+            self.frames.append(frame)
+
+        self.frame_to_use = 0
+        self.ticks_counter = 0
+        self.ticks_per_frame = fps_jogo // self.FPS
+        self.velocidade = velocidade
+
+        self.rect = self.frames[0].get_rect()
+        self.rect.left = x
+        self.rect.centery = y
+
+    @property
+    def fora_da_tela(self):
+        return self.rect.right < 0
+
+    def atualizar(self):
+        self.rect.x -= self.velocidade
+
+        self.ticks_counter += 1
+
+        if self.ticks_counter >= self.ticks_per_frame:
+            self.ticks_counter = 0
+
+            self.frame_to_use = (self.frame_to_use + 1) % len(self.frames)
+
+    def aplicar(self, rect):
+        """Puxa um rect em direcao ao centro do buraco negro (campo de succao).
+        Retorna True se cruzou o horizonte de eventos (foi engolido)."""
+        centro_x, centro_y = self.rect.center
+        dx = centro_x - rect.centerx
+        dy = centro_y - rect.centery
+        distancia = math.hypot(dx, dy)
+
+        if distancia <= self.event_horizon:
+            return True
+
+        # Lei do inverso do quadrado, com softening perto do centro e teto de forca.
+        distancia_efetiva = max(self.softening, distancia)
+        forca = self.gravity / (distancia_efetiva * distancia_efetiva)
+        forca = min(forca, self.max_pull)
+
+        rect.x += forca * (dx / distancia)
+        rect.y += forca * (dy / distancia)
+        return False
+
+    def desenhar(self, tela):
+        tela.blit(self.frames[self.frame_to_use], self.rect)
+
 
 class DeathStar:
     # Ciclo do superlaser, em frames: espera -> carrega o triangulo -> dispara o feixe.

@@ -25,6 +25,13 @@ _ARQUIVOS_SONS = {
     "fase_deathstar": "assets/sons/fase_deathstar.mp3",
     "laser_deathstar": "assets/sons/laser_deathstar.mp3",
     "tela_reparo": "assets/sons/tela_reparo.mp3",
+    "black_hole": "assets/sons/black_hole_sound.mp3",
+}
+
+# Volumes especificos para sons que destoam do padrao. O do buraco negro fica
+# mais baixo por tocar em loop continuo enquanto ele esta na tela.
+_VOLUMES_CUSTOMIZADOS = {
+    "black_hole": 0.06,
 }
 
 
@@ -36,12 +43,17 @@ def carregar_sons():
         return {nome: _SomMudo() for nome in _ARQUIVOS_SONS}
 
     sons = {nome: pygame.mixer.Sound(caminho) for nome, caminho in _ARQUIVOS_SONS.items()}
-    for som in sons.values():
-        som.set_volume(0.15)
+    for nome, som in sons.items():
+        som.set_volume(_VOLUMES_CUSTOMIZADOS.get(nome, 0.15))
     return sons
 
 
 sons_jogo = carregar_sons()
+
+def sortear_chance(chance):
+    if random.random() <= chance:
+        return True
+    return False
 
 def calcular_pontos(pontos_atual, pontos_ganhos):
     """Soma os pontos ganhos à pontuação atual."""
