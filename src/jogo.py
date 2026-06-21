@@ -218,6 +218,11 @@ def tela_fase_cinema(tela, fase_atual):
 def executar_jogo():
     """Executa o loop principal do jogo e controla estado, colisões e pontuação."""
     pygame.init()
+    pygame.mixer.init()
+
+    # pygame.mixer.music.load("assets/sons/somdefundo123.ogg")
+    # pygame.mixer.music.set_volume(0.7)
+    # pygame.mixer.music.play(-1)
 
     tela = pygame.display.set_mode(
         (LARGURA_TELA, ALTURA_TELA),
@@ -274,9 +279,12 @@ def executar_jogo():
         velocidade_entrada = 3
         entrando = iniciar_entrada(jogador, ALTURA_TELA)
         if fase_atual in [1, 2, 3]:
-            sons_jogo["musica_fase_123"].play(-1)
+            if not pygame.mixer.music.get_busy():
+                pygame.mixer.music.load("assets/sons/somdefundo123.ogg")
+                pygame.mixer.music.play(-1)
         elif fase_atual == 4:
-            sons_jogo["fase_deathstar"].play(-1)
+            pygame.mixer.music.load("assets/sons/fase_deathstar.mp3")
+            pygame.mixer.music.play(-1)
         ferramenta_coletada_na_fase = False
         ferramenta_na_tela = False
         ferramenta_rect = pygame.Rect(0, 0, 0, 0)
@@ -395,6 +403,7 @@ def executar_jogo():
                     if verificar_colisao(tiro.rect, enemy.hitbox):
                         pontos = calcular_pontos(pontos, 100)
                         enemies_mortos += 1
+                        sons_jogo["morte_personagens"].stop()
                         sons_jogo["morte_personagens"].play()
                         lista_enemies.remove(enemy)
                         if tiro in lista_lasers_jogador:
@@ -407,11 +416,11 @@ def executar_jogo():
 
 
             if enemies_mortos >= total_enemies_da_fase:
-                if fase_atual in [1, 2, 3]:
-                    sons_jogo["musica_fase_123"].stop()
-                elif fase_atual == 4:
-                    sons_jogo["fase_deathstar"].stop()
-
+                # if fase_atual in [1, 2, 3]:
+                #     sons_jogo["musica_fase_123"].stop()
+                # elif fase_atual == 4:
+                #     sons_jogo["fase_deathstar"].stop()
+                pygame.mixer.music.stop()
                 sons_jogo["conclusao_fase"].play()
                 tela_loading(tela, fase_atual, relogio)
                 fase_atual += 1 
@@ -422,8 +431,12 @@ def executar_jogo():
                 else:
                     tela_fase_cinema(tela, fase_atual)
 
-                    if fase_atual == 4:
-                        sons_jogo["fase_deathstar"].play(-1)
+                    if fase_atual in [1, 2, 3]:
+                        pygame.mixer.music.load("assets/sons/somdefundo123.ogg")
+                        pygame.mixer.music.play(-1)
+                    elif fase_atual == 4:
+                        pygame.mixer.music.load("assets/sons/fase_deathstar.mp3")
+                        pygame.mixer.music.play(-1)
 
                 regras_fase = CONFIG_FASES[fase_atual]
                 enemies_restantes_para_nascer = regras_fase["total_enemies"]
@@ -439,7 +452,6 @@ def executar_jogo():
                 ultimo_spawn_enemy = pygame.time.get_ticks()
                 ferramenta_coletada_na_fase = False
 
-                # Refaz a animação de entrada a cada nova fase
                 entrando = iniciar_entrada(jogador, ALTURA_TELA)
                 lista_lasers_jogador = []
                 inicio_fase = pygame.time.get_ticks()
@@ -468,7 +480,7 @@ def executar_jogo():
 
                 # Estrela da morte destruida: o jogador venceu.
                 if vidas_death_star <= 0:
-                    sons_jogo["fase_deathstar"].stop()
+                    pygame.mixer.music.stop()
                     venceu = True
                     rodando = False
 
@@ -534,13 +546,13 @@ def executar_jogo():
                     pontos += 1
 
             if jogador_perdeu(vidas):
-                if fase_atual in [1, 2, 3]:
-                    sons_jogo["musica_fase_123"].stop()
-                elif fase_atual == 4:
-                    sons_jogo["fase_deathstar"].stop()
-                    
+                # if fase_atual in [1, 2, 3]:
+                #     sons_jogo["musica_fase_123"].stop()
+                # elif fase_atual == 4:
+                #     sons_jogo["fase_deathstar"].stop()
+                pygame.mixer.music.stop()
                 sons_jogo["morte_personagens"].play()
-                pygame.time.wait(300)
+                pygame.time.wait(500)
                 rodando = False
 
             if pontos > recorde:
