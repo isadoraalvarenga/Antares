@@ -37,7 +37,7 @@ class BlackHole:
     event_horizon = 18
     max_pull = 35
     FPS = 12
-    def __init__(self, x, y, num_frames=12, fps_jogo=60, scale=1):
+    def __init__(self, x, y, num_frames=12, fps_jogo=60, scale=1, velocidade=2):
         spritesheet = pygame.image.load(CAMINHO_BLACK_HOLE).convert_alpha()
 
         sheet_height = spritesheet.get_height()
@@ -58,10 +58,19 @@ class BlackHole:
         self.frame_to_use = 0
         self.ticks_counter = 0
         self.ticks_per_frame = fps_jogo // self.FPS
+        self.velocidade = velocidade
+
         self.rect = self.frames[0].get_rect()
-        self.rect.center = (x, y)
+        self.rect.left = x
+        self.rect.centery = y
+
+    @property
+    def fora_da_tela(self):
+        return self.rect.right < 0
 
     def atualizar(self):
+        self.rect.x -= self.velocidade
+
         self.ticks_counter += 1
 
         if self.ticks_counter >= self.ticks_per_frame:

@@ -244,6 +244,7 @@ def executar_jogo():
     }
 
     FREQUENCIA_ASTEROIDE = 40
+    BLACK_HOLE_SCALE_MAX = 6
 
     velocidade = 10
     fundo_x = 0
@@ -272,6 +273,8 @@ def executar_jogo():
         death_star = None
         black_hole = None
         spawn_black_hole = False
+        # Tamanho do buraco negro: sorteado uma unica vez por partida.
+        scale_black_hole = random.randint(2, BLACK_HOLE_SCALE_MAX)
         venceu = False
         destino_x = 20
         velocidade_entrada = 3
@@ -450,7 +453,10 @@ def executar_jogo():
                 death_star = DeathStar(LARGURA_TELA, ALTURA_TELA)
 
             if fase_atual >= 2 and spawn_black_hole and black_hole == None:
-                black_hole = BlackHole(LARGURA_TELA // 2, ALTURA_TELA // 2, 12, 60, 3)
+                black_hole = BlackHole(LARGURA_TELA, 0, 12, 60, scale_black_hole)
+                # Y sorteado mantendo o sprite inteiro dentro da tela.
+                metade_altura = black_hole.rect.height // 2
+                black_hole.rect.centery = random.randint(metade_altura, ALTURA_TELA - metade_altura)
 
             if black_hole is not None:
                 black_hole.atualizar()
@@ -493,6 +499,11 @@ def executar_jogo():
                     inicio_fase = pygame.time.get_ticks()
                     entrando = iniciar_entrada(jogador, ALTURA_TELA)
                     continue
+
+                # Saiu pela esquerda: descarta e sorteia a chance de voltar.
+                if black_hole.fora_da_tela:
+                    black_hole = None
+                    spawn_black_hole = sortear_chance(CONFIG_FASES[fase_atual]["chance_black_hole"])
 
 
             if death_star is not None:
