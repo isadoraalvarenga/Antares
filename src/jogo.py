@@ -23,8 +23,10 @@ from src.funcoes import (
     verificar_vida_baixa,
     calcular_pontos,
     tela_reparo,
-    iniciar_entrada
+    iniciar_entrada,
+    sons_jogo,
 )
+
 from src.sprites import pegar_sprite, Obstacle, Enemies, Bullet, DeathStar
 from src.dados import (
     salvar_recorde,
@@ -231,7 +233,8 @@ def executar_jogo():
     player_image = pegar_sprite("assets/imagens/millenium_falcon_fr.bmp", x=0, y=0, width=118, height=32, scale=1)
 
     # Ferramenta de Reparo
-    ferramenta_image = pegar_sprite(CAMINHO_SPRITES, x=900, y=690, width=200, height=200, scale=0.15)
+    ferramenta_image = pygame.image.load("assets/imagens/item-de-reparo.png").convert_alpha()
+    ferramenta_image = pygame.transform.scale(ferramenta_image, (90, 90))
 
     # 2. Criando a estrutura de Sprites usando Dicionários
     jogador = {
@@ -270,16 +273,20 @@ def executar_jogo():
         destino_x = 20
         velocidade_entrada = 3
         entrando = iniciar_entrada(jogador, ALTURA_TELA)
+        if fase_atual == 4:
+            sons_jogo["fase_deathstar"].play(-1)
         ferramenta_coletada_na_fase = False
         ferramenta_na_tela = False
         ferramenta_rect = pygame.Rect(0, 0, 0, 0)
         ferramenta_velocidade = 5
         chances_perdidas = 0
         ticks_pra_spawnar_ds = 5000
+        laser_ds_tocando = False
 
         regras_fase = CONFIG_FASES[fase_atual]
         enemies_restantes_para_nascer = regras_fase["total_enemies"]
         total_enemies_da_fase = regras_fase["total_enemies"]
+        
         intervalo_spawn = regras_fase["intervalo_spawn"] * 1000
         velocidade_enemy = regras_fase["vel_enemy"]
 
@@ -352,7 +359,8 @@ def executar_jogo():
             for enemy in lista_enemies[:]:
                 enemy.atualizar(lista_lasers_enemies)
 
-                if verificar_colisao(jogador["rect"], enemy.rect):
+                if verificar_colisao(jogador["rect"], enemy.hitbox):
+                    sons_jogo["colisao_nave"].play()
                     vidas = tomar_dano(vidas, 15.0) 
                     lista_enemies.remove(enemy)
                     enemies_restantes_para_nascer += 1 
@@ -375,53 +383,58 @@ def executar_jogo():
 
             for tiro in lista_lasers_jogador[:]:
                 tiro.atualizar()
-                
+            
                 if tiro.rect.x > LARGURA_TELA:
                     lista_lasers_jogador.remove(tiro)
                     continue
-                
+            
                 for enemy in lista_enemies[:]:
-                    if verificar_colisao(tiro.rect, enemy.rect):
+                    if verificar_colisao(tiro.rect, enemy.hitbox):
                         pontos = calcular_pontos(pontos, 100)
                         enemies_mortos += 1 
                         lista_enemies.remove(enemy)
                         if tiro in lista_lasers_jogador:
                             lista_lasers_jogador.remove(tiro)
                         break
-                
+            
                 if tiro in lista_lasers_jogador and death_star is not None and verificar_colisao(death_star.hitbox, tiro.rect):
                     vidas_death_star = tomar_dano(vidas_death_star, tiro.dano)
                     lista_lasers_jogador.remove(tiro)
 
 
             if enemies_mortos >= total_enemies_da_fase:
+                if fase_atual == 4:
+                    sons_jogo["fase_deathstar"].stop()
                 tela_loading(tela, fase_atual, relogio)
                 fase_atual += 1 
-                
+            
                 if fase_atual > 4:
                     rodando = False
                     fase_atual = 1 
                 else:
                     tela_fase_cinema(tela, fase_atual)
 
-                    regras_fase = CONFIG_FASES[fase_atual]
-                    enemies_restantes_para_nascer = regras_fase["total_enemies"]
-                    total_enemies_da_fase = regras_fase["total_enemies"]
-                    intervalo_spawn = regras_fase["intervalo_spawn"] * 1000
-                    velocidade_enemy = regras_fase["vel_enemy"]
+                    if fase_atual == 4:
+                        sons_jogo["fase_deathstar"].play(-1)
 
-                    lista_enemies.clear()
-                    lista_lasers_enemies.clear()
-                    lista_obstaculos.clear()
+                regras_fase = CONFIG_FASES[fase_atual]
+                enemies_restantes_para_nascer = regras_fase["total_enemies"]
+                total_enemies_da_fase = regras_fase["total_enemies"]
+                intervalo_spawn = regras_fase["intervalo_spawn"] * 1000
+                velocidade_enemy = regras_fase["vel_enemy"]
 
-                    enemies_mortos = 0
-                    ultimo_spawn_enemy = pygame.time.get_ticks()
-                    ferramenta_coletada_na_fase = False
+                lista_enemies.clear()
+                lista_lasers_enemies.clear()
+                lista_obstaculos.clear()
 
-                    # Refaz a animação de entrada a cada nova fase
-                    entrando = iniciar_entrada(jogador, ALTURA_TELA)
-                    lista_lasers_jogador = []
-                    inicio_fase = pygame.time.get_ticks()
+                enemies_mortos = 0
+                ultimo_spawn_enemy = pygame.time.get_ticks()
+                ferramenta_coletada_na_fase = False
+
+                # Refaz a animação de entrada a cada nova fase
+                entrando = iniciar_entrada(jogador, ALTURA_TELA)
+                lista_lasers_jogador = []
+                inicio_fase = pygame.time.get_ticks()
 
 
             contador_tempo += 1
@@ -435,12 +448,19 @@ def executar_jogo():
 
             if death_star is not None:
                 death_star.atualizar()
+                if death_star.laser_rect is not None and not laser_ds_tocando:
+                    sons_jogo["laser_deathstar"].play()
+                    laser_ds_tocando = True
+                elif death_star.laser_rect is None:
+                    laser_ds_tocando = False
+
                 # Feixe do superlaser: encostou no jogador, morreu.
                 if death_star.laser_rect is not None and verificar_colisao(jogador["rect"], death_star.laser_rect):
                     vidas = 0
 
                 # Estrela da morte destruida: o jogador venceu.
                 if vidas_death_star <= 0:
+                    sons_jogo["fase_deathstar"].stop()
                     venceu = True
                     rodando = False
 
@@ -456,7 +476,6 @@ def executar_jogo():
                 
                 # Se o jogador pegar a ferramenta de reparo
                 if verificar_colisao(jogador["rect"], ferramenta_rect):
-                    vidas = limitar_valor(vidas + 20.0, 0, 100.0)
                     ferramenta_coletada_na_fase = True
                     ferramenta_na_tela = False
                     
@@ -478,6 +497,7 @@ def executar_jogo():
                     
                     # 3. Aplica as regras do resultado do quiz
                     if acertou:
+                        sons_jogo["tela_reparo"].play()
                         vidas = limitar_valor(vidas + 20.0, 0, 100.0) # Ganha 20% de vida
                         if questao_respondida in perguntas_da_partida:
                             perguntas_da_partida.remove(questao_respondida) # Remove para não repetir
@@ -497,6 +517,7 @@ def executar_jogo():
                 obstaculo.atualizar()
 
                 if verificar_colisao(jogador["rect"], obstaculo.rect):
+                    sons_jogo["colisao_nave"].play()
                     vidas = tomar_dano(vidas, obstaculo.dano)
                     lista_obstaculos.remove(obstaculo)
 
@@ -505,8 +526,9 @@ def executar_jogo():
                     pontos += 1
 
             if jogador_perdeu(vidas):
-                 
-                 rodando = False
+                if fase_atual == 4:
+                    sons_jogo["fase_deathstar"].stop()
+                rodando = False
 
             if pontos > recorde:
                 recorde = pontos
@@ -558,6 +580,7 @@ def executar_jogo():
         # A partida acabou. Se o jogador nao fechou a janela, mostra a tela de fim.
         if jogando:
             if venceu:
+                sons_jogo["conclusao_jogo"].play()
                 jogando = tela_vitoria(tela, imagem_original, relogio)
                 # Apos vencer, "Jogar" recomeca a campanha pela fase 1.
                 if jogando:
