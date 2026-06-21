@@ -2,24 +2,44 @@ import pygame
 import random
 from pygame import mixer
 
-mixer.init()
+
+class _SomMudo:
+    """Evita que a inicialização do aúdio em SO sem driver de aúdio disponível crashe a aplicação"""
+
+    def play(self, *args, **kwargs):
+        return None
+
+    def stop(self, *args, **kwargs):
+        return None
+
+    def set_volume(self, *args, **kwargs):
+        return None
 
 
-sons_jogo = {
-    "coleta_gema": pygame.mixer.Sound("assets/sons/coleta_gema.mp3"),
-    "colisao_nave": pygame.mixer.Sound("assets/sons/colisao_asteroide-nave.mp3"),
-    "conclusao_jogo": pygame.mixer.Sound("assets/sons/conclusao_jogo.mp3"),
-    "fase_deathstar": pygame.mixer.Sound("assets/sons/fase_deathstar.mp3"),
-    "laser_deathstar": pygame.mixer.Sound("assets/sons/laser_deathstar.mp3"),
-    "tela_reparo": pygame.mixer.Sound("assets/sons/tela_reparo.mp3") 
-    }
+_ARQUIVOS_SONS = {
+    "coleta_gema": "assets/sons/coleta_gema.mp3",
+    "colisao_nave": "assets/sons/colisao_asteroide-nave.mp3",
+    "conclusao_jogo": "assets/sons/conclusao_jogo.mp3",
+    "fase_deathstar": "assets/sons/fase_deathstar.mp3",
+    "laser_deathstar": "assets/sons/laser_deathstar.mp3",
+    "tela_reparo": "assets/sons/tela_reparo.mp3",
+}
 
-sons_jogo["fase_deathstar"].set_volume(0.15)
-sons_jogo["coleta_gema"].set_volume(0.15)
-sons_jogo["colisao_nave"].set_volume(0.15)
-sons_jogo["conclusao_jogo"].set_volume(0.15)
-sons_jogo["laser_deathstar"].set_volume(0.15)
-sons_jogo["tela_reparo"].set_volume(0.15)
+
+def carregar_sons():
+    """Carrega os sons gerais do jogo"""
+    try:
+        mixer.init()
+    except pygame.error:
+        return {nome: _SomMudo() for nome in _ARQUIVOS_SONS}
+
+    sons = {nome: pygame.mixer.Sound(caminho) for nome, caminho in _ARQUIVOS_SONS.items()}
+    for som in sons.values():
+        som.set_volume(0.15)
+    return sons
+
+
+sons_jogo = carregar_sons()
 
 def calcular_pontos(pontos_atual, pontos_ganhos):
     """Soma os pontos ganhos à pontuação atual."""
