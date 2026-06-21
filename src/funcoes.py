@@ -41,6 +41,11 @@ def carregar_sons():
 
 sons_jogo = carregar_sons()
 
+def sortear_chance(chance):
+    if random.random() <= chance:
+        return True
+    return False
+
 def calcular_pontos(pontos_atual, pontos_ganhos):
     """Soma os pontos ganhos à pontuação atual."""
     return pontos_atual + pontos_ganhos

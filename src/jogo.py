@@ -24,6 +24,7 @@ from src.funcoes import (
     calcular_pontos,
     tela_reparo,
     iniciar_entrada,
+    sortear_chance,
     sons_jogo,
 )
 
@@ -270,6 +271,7 @@ def executar_jogo():
         vidas_death_star = 200
         death_star = None
         black_hole = None
+        spawn_black_hole = False
         venceu = False
         destino_x = 20
         velocidade_entrada = 3
@@ -419,6 +421,7 @@ def executar_jogo():
                         sons_jogo["fase_deathstar"].play(-1)
 
                 regras_fase = CONFIG_FASES[fase_atual]
+                spawn_black_hole = sortear_chance(CONFIG_FASES[fase_atual]["chance_black_hole"])
                 enemies_restantes_para_nascer = regras_fase["total_enemies"]
                 total_enemies_da_fase = regras_fase["total_enemies"]
                 intervalo_spawn = regras_fase["intervalo_spawn"] * 1000
@@ -445,7 +448,8 @@ def executar_jogo():
 
             if fase_atual == 4 and tempo_atual - inicio_fase >= ticks_pra_spawnar_ds and death_star == None:
                 death_star = DeathStar(LARGURA_TELA, ALTURA_TELA)
-            if black_hole == None:
+
+            if fase_atual >= 2 and spawn_black_hole and black_hole == None:
                 black_hole = BlackHole(LARGURA_TELA // 2, ALTURA_TELA // 2, 12, 60, 3)
 
             if black_hole is not None:
