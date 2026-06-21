@@ -1,7 +1,7 @@
 import pygame
 import random
 import math
-from src.config import CAMINHO_DEATH_STAR
+from src.config import CAMINHO_DEATH_STAR, CAMINHO_BLACK_HOLE
 
 def pegar_sprite(local_arquivo, x, y, width, height, scale=1):
     """Corta um único elemento de uma spritesheet BMP e remove o fundo."""
@@ -30,6 +30,46 @@ def pegar_sprite(local_arquivo, x, y, width, height, scale=1):
         image = pygame.transform.scale(image, (novo_largura, novo_altura))
         
     return image
+
+class BlackHole:
+    chance = 0.5
+    FPS = 12
+    frames = []
+    def __init__(self, x, y, num_frames, fps_jogo=60, scale=1):
+        spritesheet = pygame.image.load(CAMINHO_BLACK_HOLE).convert_alpha()
+
+        sheet_height = spritesheet.get_height()
+        frame_width = spritesheet.get_width() // num_frames
+
+        self.frames = []
+        for i in range(num_frames):
+            frame = pygame.Surface((frame_width, sheet_height), pygame.SRCALPHA)
+            frame.blit(spritesheet, (0, 0), (i * frame_width, 0, frame_width, sheet_height))
+
+            if scale != 1:
+                frame = pygame.transform.scale(
+                    frame, (int(frame_width, * scale), int(altura * scale))
+                )
+            
+            self.frames.append(frame)
+
+        self.frame_to_use = 0
+        self.ticks_counter = 0
+        self.ticks_per_frame = fps_jogo // self.FPS
+        self.rect = self.frames[0].get_rect()
+        self.rect.center = (x, y)
+
+    def atualizar(self):
+        self.ticks_counter += 1
+
+        if self.ticks_counter >= self.ticks_per_frame:
+            self.ticks_counter = 0
+
+            self.frame_to_use = (self.frame_to_use + 1) % len(self.frames)
+
+    def desenhar(self, tela):
+        tela.blit(self.frames[self.frame_to_use], self.rect)
+
 
 class DeathStar:
     # Ciclo do superlaser, em frames: espera -> carrega o triangulo -> dispara o feixe.
