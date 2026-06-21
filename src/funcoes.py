@@ -1,5 +1,25 @@
 import pygame
 import random
+from pygame import mixer
+
+mixer.init()
+
+
+sons_jogo = {
+    "coleta_gema": pygame.mixer.Sound("assets/sons/coleta_gema.mp3"),
+    "colisao_nave": pygame.mixer.Sound("assets/sons/colisao_asteroide-nave.mp3"),
+    "conclusao_jogo": pygame.mixer.Sound("assets/sons/conclusao_jogo.mp3"),
+    "fase_deathstar": pygame.mixer.Sound("assets/sons/fase_deathstar.mp3"),
+    "laser_deathstar": pygame.mixer.Sound("assets/sons/laser_deathstar.mp3"),
+    "tela_reparo": pygame.mixer.Sound("assets/sons/tela_reparo.mp3") 
+    }
+
+sons_jogo["fase_deathstar"].set_volume(0.15)
+sons_jogo["coleta_gema"].set_volume(0.15)
+sons_jogo["colisao_nave"].set_volume(0.15)
+sons_jogo["conclusao_jogo"].set_volume(0.15)
+sons_jogo["laser_deathstar"].set_volume(0.15)
+sons_jogo["tela_reparo"].set_volume(0.15)
 
 def calcular_pontos(pontos_atual, pontos_ganhos):
     """Soma os pontos ganhos à pontuação atual."""
