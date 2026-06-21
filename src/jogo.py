@@ -27,7 +27,7 @@ from src.funcoes import (
     sons_jogo,
 )
 
-from src.sprites import pegar_sprite, Obstacle, Enemies, Bullet, DeathStar
+from src.sprites import pegar_sprite, Obstacle, Enemies, Bullet, DeathStar, BlackHole
 from src.dados import (
     salvar_recorde,
     carregar_recorde,
@@ -269,6 +269,7 @@ def executar_jogo():
         vidas = 100.0
         vidas_death_star = 200
         death_star = None
+        black_hole = None
         venceu = False
         destino_x = 20
         velocidade_entrada = 3
@@ -442,8 +443,13 @@ def executar_jogo():
                 lista_obstaculos.append(Obstacle(LARGURA_TELA, ALTURA_TELA))
                 contador_tempo = 0
 
-            if fase_atual == 4 and tempo_atual - inicio_fase >= ticks_pra_spawnar_ds and death_star is None:
+            if fase_atual == 4 and tempo_atual - inicio_fase >= ticks_pra_spawnar_ds and death_star == None:
                 death_star = DeathStar(LARGURA_TELA, ALTURA_TELA)
+            if black_hole == None:
+                black_hole = BlackHole(LARGURA_TELA // 2, ALTURA_TELA // 2, 12, 60, 3)
+
+            if black_hole is not None:
+                black_hole.atualizar()
                 
 
             if death_star is not None:
@@ -553,6 +559,9 @@ def executar_jogo():
                           
             for obstaculo in lista_obstaculos:
                 obstaculo.desenhar(tela)
+
+            if black_hole is not None:
+                black_hole.desenhar(tela)
 
             if death_star is not None and vidas_death_star > 0:
                 death_star.desenhar(tela)

@@ -34,8 +34,7 @@ def pegar_sprite(local_arquivo, x, y, width, height, scale=1):
 class BlackHole:
     chance = 0.5
     FPS = 12
-    frames = []
-    def __init__(self, x, y, num_frames, fps_jogo=60, scale=1):
+    def __init__(self, x, y, num_frames=12, fps_jogo=60, scale=1):
         spritesheet = pygame.image.load(CAMINHO_BLACK_HOLE).convert_alpha()
 
         sheet_height = spritesheet.get_height()
@@ -48,7 +47,7 @@ class BlackHole:
 
             if scale != 1:
                 frame = pygame.transform.scale(
-                    frame, (int(frame_width, * scale), int(altura * scale))
+                    frame, (int(frame_width * scale), int(sheet_height * scale))
                 )
             
             self.frames.append(frame)
