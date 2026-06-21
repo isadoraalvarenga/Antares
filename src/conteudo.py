@@ -63,14 +63,14 @@ FALAS_INICIO_FASE = {
     4: "Chegou a hora. Eu não te contei antes porque tinha medo que você desistisse — aquilo lá na frente já me consumiu uma vez. Mas dessa vez, eu não vou deixar você enfrentar sozinho.",
 }
 
-FALAS_DANO = {
+FALAS_DANO_CRITICO = {
     1: "Ai! Isso doeu até pra mim... vai, acha um item de reparo por aí.",
     2: "Ui, essa eu senti. Tem um reparo rondando por aqui, vê se acha.",
     3: "Isso dói cada vez mais... por favor, acha logo um reparo.",
     4: "Eu sinto cada golpe que você leva agora. Acha o reparo — eu não aguento te ver assim, não dessa vez.",
 }
 
-FALAS_DANO_CRITICO = {
+FALAS_DANO = {
     1: "Sua vida tá baixa! Cuidado, ainda temos um caminho longo pela frente.",
     2: "Isso tá ficando perigoso de verdade. Não desiste agora, tá quase lá.",
     3: "Sua luz tá fraquinha... e a minha também. A gente precisa segurar firme.",
