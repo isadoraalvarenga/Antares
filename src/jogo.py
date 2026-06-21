@@ -434,6 +434,10 @@ def executar_jogo():
                 lista_lasers_enemies.clear()
                 lista_obstaculos.clear()
 
+                # Buraco negro pertence a fase que acabou: para o som e descarta.
+                sons_jogo["black_hole"].stop()
+                black_hole = None
+
                 enemies_mortos = 0
                 ultimo_spawn_enemy = pygame.time.get_ticks()
                 ferramenta_coletada_na_fase = False
@@ -457,6 +461,8 @@ def executar_jogo():
                 # Y sorteado mantendo o sprite inteiro dentro da tela.
                 metade_altura = black_hole.rect.height // 2
                 black_hole.rect.centery = random.randint(metade_altura, ALTURA_TELA - metade_altura)
+                # Zumbido em loop enquanto o buraco negro estiver na tela.
+                sons_jogo["black_hole"].play(-1)
 
             if black_hole is not None:
                 black_hole.atualizar()
@@ -473,6 +479,7 @@ def executar_jogo():
 
                 # Jogador engolido: volta pra fase 1 sem game over (rewind da partida).
                 if not entrando and black_hole.aplicar(jogador["rect"]):
+                    sons_jogo["black_hole"].stop()
                     if fase_atual == 4:
                         sons_jogo["fase_deathstar"].stop()
 
@@ -502,6 +509,7 @@ def executar_jogo():
 
                 # Saiu pela esquerda: descarta e sorteia a chance de voltar.
                 if black_hole.fora_da_tela:
+                    sons_jogo["black_hole"].stop()
                     black_hole = None
                     spawn_black_hole = sortear_chance(CONFIG_FASES[fase_atual]["chance_black_hole"])
 
@@ -640,7 +648,11 @@ def executar_jogo():
 
             pygame.display.flip()
 
-        # A partida acabou. Se o jogador nao fechou a janela, mostra a tela de fim.
+        # A partida acabou (vitoria, game over ou janela fechada): garante que o
+        # zumbido do buraco negro nao vaze para a tela de fim.
+        sons_jogo["black_hole"].stop()
+
+        # Se o jogador nao fechou a janela, mostra a tela de fim.
         if jogando:
             if venceu:
                 sons_jogo["conclusao_jogo"].play()
