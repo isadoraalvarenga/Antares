@@ -219,7 +219,13 @@ class Enemies:
         
         self.rect.y = random.randint(50, altura_tela - 80)
         self.velocidade = velocidade
-        self.vida = 1 
+        self.vida = 1
+
+        self._bounds = self.image.get_bounding_rect()
+
+    @property
+    def hitbox(self):
+        return self._bounds.move(self.rect.x, self.rect.y)
 
     def atualizar(self, lista_lasers_enemies):
         self.rect.x -= self.velocidade
@@ -234,7 +240,9 @@ class Enemies:
 class LaserEnemies:
     def __init__(self, x, y):
         self.image = pygame.Surface((12, 4))
-        self.image.fill((255, 50, 50)) # Laser vermelho clássico do Império
+        
+        self.image.fill((255, 50, 50))
+        pygame.draw.rect(self.image, (255, 200, 200), (0, 1, 12, 2))
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
         self.velocidade = 10
@@ -246,19 +254,28 @@ class LaserEnemies:
         tela.blit(self.image, self.rect)
 
 class Bullet:
-    """O layout exclusivo do tiro criado pela colega integrado ao seu arquivo"""
     def __init__(self, x, y):
-        self.image = pegar_sprite(
-            "assets/imagens/bullet.png",
-            x=0, y=0, width=154, height=64, scale=0.1
-        )
-        # Reduz o tamanho da bala
-        self.rect = self.image.get_rect(midleft=(x, y))
+
         self.velocidade = 15
         self.dano = 5
+
+        self.largura_laser = 26
+        self.altura_laser = 4
+        self.cor_laser = (50, 255, 90)
+        self.rect = pygame.Rect(0, 0, self.largura_laser, self.altura_laser)
+        self.rect.midleft = (x, y)
 
     def atualizar(self):
         self.rect.x += self.velocidade
 
     def desenhar(self, tela):
-        tela.blit(self.image, self.rect)
+        camada = pygame.Surface((self.largura_laser + 20, self.altura_laser + 20), pygame.SRCALPHA)
+        cx, cy = camada.get_width() // 2, camada.get_height() // 2
+
+        r, g, b = self.cor_laser
+        pygame.draw.rect(camada, (r, g, b, 60), (cx - self.largura_laser//2 - 4, cy - self.altura_laser//2 - 4, self.largura_laser + 8, self.altura_laser + 8))
+        pygame.draw.rect(camada, (r, g, b, 140), (cx - self.largura_laser//2 - 2, cy - self.altura_laser//2 - 2, self.largura_laser + 4, self.altura_laser + 4))
+        pygame.draw.rect(camada, (r, g, b, 255), (cx - self.largura_laser//2, cy - self.altura_laser//2, self.largura_laser, self.altura_laser))
+        pygame.draw.rect(camada, (220, 255, 220, 255), (cx - self.largura_laser//2 + 4, cy - self.altura_laser//2 + 1, self.largura_laser - 8, self.altura_laser - 2))
+
+        tela.blit(camada, (self.rect.centerx - camada.get_width()//2, self.rect.centery - camada.get_height()//2))

@@ -24,8 +24,8 @@ CAMINHO_DEATH_STAR = "assets/imagens/death_star.png"
 FONTE = "assets/fontes/Starjout.ttf"
 
 CONFIG_FASES = {
-    1: {"total_enemies": 8, "intervalo_spawn": 2.0, "vel_enemy": 1},
-    2: {"total_enemies": 15, "intervalo_spawn": 1.25, "vel_enemy": 2},
-    3: {"total_enemies": 22, "intervalo_spawn": 0.90, "vel_enemy": 3},
+    1: {"total_enemies": 8, "intervalo_spawn": 2.0, "vel_enemy": 4},
+    2: {"total_enemies": 15, "intervalo_spawn": 1.25, "vel_enemy": 5},
+    3: {"total_enemies": 22, "intervalo_spawn": 0.90, "vel_enemy": 6},
     4: {"total_enemies": 25, "intervalo_spawn": 5.0, "vel_enemy": 2}#Estrela da morte
 }
