@@ -25,6 +25,8 @@ from src.funcoes import (
     tela_reparo,
     iniciar_entrada,
     sortear_chance,
+    iniciar_legenda,
+    desenhar_legenda_digitada,
     sons_jogo,
 )
 
@@ -34,61 +36,13 @@ from src.dados import (
     carregar_recorde,
 )
 
-# Banco de dados das perguntas
-
-perguntas = [
-    {
-        "pergunta": "O que armazena uma Matriz de tamanho 3x3?",
-        "opcoes": ["3 elementos", "6 elementos", "9 elementos", "0 elementos"],
-        "correta": 2
-    },
-    {
-        "pergunta": "O que acontece se tentarmos ler a posição 5 de um vetor de tamanho 3?",
-        "opcoes": ["Ele aumenta de tamanho sozinho", "Dá erro de índice fora do limite", "O programa adivinha o valor", "Ele apaga o vetor"],
-        "correta": 1
-    },
-    {
-        "pergunta": "Qual comando usamos para repetir um bloco de código enquanto uma condição for verdadeira?",
-        "opcoes": ["if", "while", "else", "print"],
-        "correta": 1
-    },
-    {
-        "pergunta": "Para que serve o comando 'if' no Python?",
-        "opcoes": ["Para repetir o código", "Para criar uma lista", "Para fazer uma pergunta/teste condicional", "Para fechar o jogo"],
-        "correta": 2
-    },
-    {
-        "pergunta": "Se o comando 'if' não for atendido, qual comando opcional roda logo em seguida?",
-        "opcoes": ["else", "while", "for", "import"],
-        "correta": 0
-    },
-    {
-        "pergunta": "Qual das opções abaixo é usada para criar uma lista vazia?",
-        "opcoes": ["lista = 0", "lista = []", "lista = 'vazia'", "lista = True"],
-        "correta": 1
-    },
-    {
-        "pergunta": "O que acontece se você criar um loop 'while True' sem nenhum comando para pará-lo?",
-        "opcoes": ["O computador desliga", "O loop roda apenas uma vez", "Gera um loop infinito e trava o programa", "O Python corrige sozinho"],
-        "correta": 2
-    },
-    {
-        "pergunta": "Qual estrutura é ideal para percorrer todos os elementos de uma lista um por um?",
-        "opcoes": ["import", "if", "else", "for"],
-        "correta": 3
-    },
-    {
-        "pergunta": "O que o comando 'print()' faz no Python?",
-        "opcoes": ["Exibe uma mensagem na tela/terminal", "Soma dois números", "Salva o jogo", "Deleta um arquivo"],
-        "correta": 0
-    },
-    {
-        "pergunta": "Qual o valor da variável 'x' após rodar: x = 5 + 3?",
-        "opcoes": ["5", "3", "53", "8"],
-        "correta": 3
-    }
-
-]
+from src.conteudo import (
+    FALAS_INICIO_FASE,
+    FALAS_DANO,
+    FALAS_DANO_CRITICO,
+    FALAS_DEATH_STAR,
+    perguntas
+)
 
 def tela_fim_partida(tela, fundo, relogio, subtitulo_texto, subtitulo_cor):
     """Tela de fim de partida (game over / vitoria).
@@ -102,8 +56,7 @@ def tela_fim_partida(tela, fundo, relogio, subtitulo_texto, subtitulo_cor):
     fonte_subtitulo = pygame.font.Font(FONTE, 50)
     fonte_botao = pygame.font.Font(FONTE, 30)
 
-    # Tudo e posicionado a partir do centro da tela, para se adaptar a qualquer
-    # resolucao em vez de ficar preso no topo.
+    # Tudo e posicionado a partir do centro da tela, para se adaptar a qualquer resolucao em vez de ficar preso no topo.
     centro_x = LARGURA_TELA // 2
     centro_y = ALTURA_TELA // 2
 
@@ -117,9 +70,6 @@ def tela_fim_partida(tela, fundo, relogio, subtitulo_texto, subtitulo_cor):
     centro_subtitulo = (centro_x, centro_y - 100)
     centro_botao_jogar = (centro_x, centro_y + 30)
     centro_botao_sair = (centro_x, centro_y + 120)
-
-    # Animacao de subida: o conteudo comeca deslocado para baixo (fora da tela)
-    # e sobe ate o deslocamento chegar a zero.
     deslocamento_y = ALTURA_TELA
     velocidade_subida = 30
 
@@ -132,8 +82,7 @@ def tela_fim_partida(tela, fundo, relogio, subtitulo_texto, subtitulo_cor):
 
         pos_mouse = pygame.mouse.get_pos()
 
-        # Areas dos botoes (servem para desenhar e para detectar o clique),
-        # recalculadas a cada frame com o deslocamento atual da animacao.
+        # Areas dos botoes (servem para desenhar e para detectar o clique)
         botao_jogar = pygame.Rect(0, 0, 240, 60)
         botao_jogar.center = (centro_botao_jogar[0], centro_botao_jogar[1] + deslocamento_y)
         botao_sair = pygame.Rect(0, 0, 240, 60)
@@ -236,6 +185,7 @@ def executar_jogo():
     # Ferramenta de Reparo
     ferramenta_image = pygame.image.load("assets/imagens/item-de-reparo.png").convert_alpha()
     ferramenta_image = pygame.transform.scale(ferramenta_image, (90, 90))
+    fonte_legenda = pygame.font.SysFont("Georgia", 22, italic=True)
 
     # 2. Criando a estrutura de Sprites usando Dicionários
     jogador = {
@@ -287,6 +237,9 @@ def executar_jogo():
         ferramenta_velocidade = 5
         chances_perdidas = 0
         ticks_pra_spawnar_ds = 5000
+        estado_legenda = {"ativa": False}
+        dano_falado_na_fase = False
+        critico_falado_na_partida = False
         laser_ds_tocando = False
 
         regras_fase = CONFIG_FASES[fase_atual]
@@ -306,6 +259,8 @@ def executar_jogo():
         rodando = True
         while rodando:
             relogio.tick(FPS)
+
+            vidas_antes_do_frame = vidas
 
             for evento in pygame.event.get():
                 if evento.type == pygame.QUIT:
@@ -358,7 +313,7 @@ def executar_jogo():
             if enemies_restantes_para_nascer > 0:
                 if tempo_atual - ultimo_spawn_enemy >= intervalo_spawn:
                     
-                    lista_enemies.append(Enemies(LARGURA_TELA, ALTURA_TELA, velocidade_enemy))
+                    lista_enemies.append(Enemies(LARGURA_TELA, ALTURA_TELA, velocidade_enemy + velocidade_fundo))
                     enemies_restantes_para_nascer -= 1
                     ultimo_spawn_enemy = tempo_atual 
 
@@ -420,6 +375,13 @@ def executar_jogo():
                 else:
                     tela_fase_cinema(tela, fase_atual)
 
+                    iniciar_legenda(estado_legenda, FALAS_INICIO_FASE[fase_atual], sons_jogo["antares"])
+
+                    regras_fase = CONFIG_FASES[fase_atual]
+                    enemies_restantes_para_nascer = regras_fase["total_enemies"]
+                    total_enemies_da_fase = regras_fase["total_enemies"]
+                    intervalo_spawn = regras_fase["intervalo_spawn"] * 1000
+                    velocidade_enemy = regras_fase["vel_enemy"]
                     if fase_atual == 4:
                         sons_jogo["fase_deathstar"].play(-1)
 
@@ -441,6 +403,8 @@ def executar_jogo():
                 enemies_mortos = 0
                 ultimo_spawn_enemy = pygame.time.get_ticks()
                 ferramenta_coletada_na_fase = False
+                dano_falado_na_fase = False
+
 
                 # Refaz a animação de entrada a cada nova fase
                 entrando = iniciar_entrada(jogador, ALTURA_TELA)
@@ -455,6 +419,8 @@ def executar_jogo():
 
             if fase_atual == 4 and tempo_atual - inicio_fase >= ticks_pra_spawnar_ds and death_star == None:
                 death_star = DeathStar(LARGURA_TELA, ALTURA_TELA)
+
+                iniciar_legenda(estado_legenda, random.choice(FALAS_DEATH_STAR), sons_jogo["antares"])
 
             if fase_atual >= 2 and spawn_black_hole and black_hole == None:
                 black_hole = BlackHole(LARGURA_TELA, 0, 12, 60, scale_black_hole)
@@ -513,7 +479,6 @@ def executar_jogo():
                     black_hole = None
                     spawn_black_hole = sortear_chance(CONFIG_FASES[fase_atual]["chance_black_hole"])
 
-
             if death_star is not None:
                 death_star.atualizar()
                 if death_star.laser_rect is not None and not laser_ds_tocando:
@@ -531,6 +496,10 @@ def executar_jogo():
                     sons_jogo["fase_deathstar"].stop()
                     venceu = True
                     rodando = False
+
+            if verificar_vida_baixa(vidas) and not critico_falado_na_partida:
+                critico_falado_na_partida = True
+                iniciar_legenda(estado_legenda, FALAS_DANO_CRITICO[fase_atual], sons_jogo["antares"])
 
             if verificar_vida_baixa(vidas) and not ferramenta_na_tela and not ferramenta_coletada_na_fase:
                 if random.random() < 0.005:
@@ -593,6 +562,10 @@ def executar_jogo():
                     lista_obstaculos.remove(obstaculo)
                     pontos += 1
 
+            if vidas < vidas_antes_do_frame and not dano_falado_na_fase:
+                dano_falado_na_fase = True
+                iniciar_legenda(estado_legenda, FALAS_DANO[fase_atual], sons_jogo["antares"])
+
             if jogador_perdeu(vidas):
                 if fase_atual == 4:
                     sons_jogo["fase_deathstar"].stop()
@@ -645,6 +618,8 @@ def executar_jogo():
             
             rect_alvo.topright = (LARGURA_TELA - 20, rect_fase.bottom + 5)
             tela.blit(texto_alvo, rect_alvo)
+
+            desenhar_legenda_digitada(tela, estado_legenda, fonte_legenda, LARGURA_TELA, ALTURA_TELA, fase_atual)
 
             pygame.display.flip()
 
