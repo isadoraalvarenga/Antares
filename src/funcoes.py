@@ -23,6 +23,11 @@ _ARQUIVOS_SONS = {
     "fase_deathstar": "assets/sons/fase_deathstar.mp3",
     "laser_deathstar": "assets/sons/laser_deathstar.mp3",
     "tela_reparo": "assets/sons/tela_reparo.mp3",
+    "musica_fase_123": "assets/sons/somdefundo123.ogg",
+    "tiro_jogador": "assets/sons/somtironossanave.wav",
+    "tiro_inimigo": "assets/sons/somtironaveinimiga_1.wav",
+    "morte_personagens": "assets/sons/sommorteinimigo.wav",
+    "conclusao_fase": "assets/sons/passadefase.wav"
 }
 
 

@@ -273,7 +273,9 @@ def executar_jogo():
         destino_x = 20
         velocidade_entrada = 3
         entrando = iniciar_entrada(jogador, ALTURA_TELA)
-        if fase_atual == 4:
+        if fase_atual in [1, 2, 3]:
+            sons_jogo["musica_fase_123"].play(-1)
+        elif fase_atual == 4:
             sons_jogo["fase_deathstar"].play(-1)
         ferramenta_coletada_na_fase = False
         ferramenta_na_tela = False
@@ -346,6 +348,7 @@ def executar_jogo():
                 novo_tiro = Bullet(jogador["rect"].right, jogador["rect"].centery)
                 lista_lasers_jogador.append(novo_tiro)
                 cooldown_tiro_jogador = 10
+                sons_jogo["tiro_jogador"].play()
 
             tempo_atual = pygame.time.get_ticks()
 
@@ -391,7 +394,8 @@ def executar_jogo():
                 for enemy in lista_enemies[:]:
                     if verificar_colisao(tiro.rect, enemy.hitbox):
                         pontos = calcular_pontos(pontos, 100)
-                        enemies_mortos += 1 
+                        enemies_mortos += 1
+                        sons_jogo["morte_personagens"].play()
                         lista_enemies.remove(enemy)
                         if tiro in lista_lasers_jogador:
                             lista_lasers_jogador.remove(tiro)
@@ -403,8 +407,12 @@ def executar_jogo():
 
 
             if enemies_mortos >= total_enemies_da_fase:
-                if fase_atual == 4:
+                if fase_atual in [1, 2, 3]:
+                    sons_jogo["musica_fase_123"].stop()
+                elif fase_atual == 4:
                     sons_jogo["fase_deathstar"].stop()
+
+                sons_jogo["conclusao_fase"].play()
                 tela_loading(tela, fase_atual, relogio)
                 fase_atual += 1 
             
@@ -526,8 +534,13 @@ def executar_jogo():
                     pontos += 1
 
             if jogador_perdeu(vidas):
-                if fase_atual == 4:
+                if fase_atual in [1, 2, 3]:
+                    sons_jogo["musica_fase_123"].stop()
+                elif fase_atual == 4:
                     sons_jogo["fase_deathstar"].stop()
+                    
+                sons_jogo["morte_personagens"].play()
+                pygame.time.wait(300)
                 rodando = False
 
             if pontos > recorde:

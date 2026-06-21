@@ -234,6 +234,9 @@ class Enemies:
             novo_laser = LaserEnemies(self.rect.left, self.rect.centery)
             lista_lasers_enemies.append(novo_laser)
 
+            from src.funcoes import sons_jogo
+            sons_jogo["tiro_inimigo"].play()
+
     def desenhar(self, tela):
         tela.blit(self.image, self.rect)
 
