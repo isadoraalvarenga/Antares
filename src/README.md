@@ -10,6 +10,3 @@ Esta pasta contém os módulos principais do jogo.
 - `sprites.py`: carregamento e recorte de spritesheet.
 - `dados.py`: leitura e gravação de dados (recorde/ranking).
 
-## Dica de evolução
-
-Quando o projeto crescer, mantenha módulos pequenos e separados por responsabilidade.
