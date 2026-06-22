@@ -163,3 +163,8 @@ Melhorias possíveis:
 - Melhoria 1: Novas naves;
 - Melhoria 2: Salvar o progresso;
 - Melhoria 3: Mais opções no menu de pausa.
+
+Referencias:
+
+- Vídeos gratuitos no youtube foram transformados em aúdio para a utilização no jogo
+- Site "pixellab.ai", "piskelapp.com" e "" para criação dos png's
