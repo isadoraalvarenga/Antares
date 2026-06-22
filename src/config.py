@@ -25,8 +25,8 @@ CAMINHO_BLACK_HOLE = "assets/imagens/black_hole.png"
 FONTE = "assets/fontes/Starjout.ttf"
 
 CONFIG_FASES = {
-    1: {"total_enemies": 8, "intervalo_spawn": 2.0, "vel_enemy": 4, "chance_black_hole": 0.0},
-    2: {"total_enemies": 15, "intervalo_spawn": 1.25, "vel_enemy": 5, "chance_black_hole": 0.3},
-    3: {"total_enemies": 22, "intervalo_spawn": 0.90, "vel_enemy": 6, "chance_black_hole": 0.6},
-    4: {"total_enemies": 25, "intervalo_spawn": 5.0, "vel_enemy": 2, "chance_black_hole": 0.9}
+    1: {"total_enemies": 8, "intervalo_spawn": 0.8, "vel_enemy": 4, "chance_black_hole": 0.0},
+    2: {"total_enemies": 15, "intervalo_spawn": 0.5, "vel_enemy": 5, "chance_black_hole": 0.3},
+    3: {"total_enemies": 22, "intervalo_spawn": 0.3, "vel_enemy": 6, "chance_black_hole": 0.6},
+    4: {"total_enemies": 25, "intervalo_spawn": 1.0, "vel_enemy": 2, "chance_black_hole": 0.9}
 }
