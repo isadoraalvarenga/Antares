@@ -9,7 +9,4 @@ Esta pasta contém os módulos principais do jogo.
 - `funcoes.py`: funções auxiliares de regra e lógica.
 - `sprites.py`: carregamento e recorte de spritesheet.
 - `dados.py`: leitura e gravação de dados (recorde/ranking).
-
-## Dica de evolução
-
-Quando o projeto crescer, mantenha módulos pequenos e separados por responsabilidade.
+- `conteudo.py`: banco de dados de perguntas do quiz e textos de diálogo/história das fases.
