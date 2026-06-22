@@ -319,7 +319,7 @@ class LaserEnemies:
         pygame.draw.rect(self.image, (255, 200, 200), (0, 1, 12, 2))
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
-        self.velocidade = 10
+        self.velocidade = 14
 
     def atualizar(self):
         self.rect.x -= self.velocidade
