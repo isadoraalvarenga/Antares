@@ -27,7 +27,7 @@ Tipo escolhido pelo grupo:
 
 Descrição:
 
-> Antares é um jogo de combate espacial inspirado em Space Invaders e ambientado no universo Star Wars, desenvolvido em Python com a biblioteca Pygame. O jogador assume o controle de uma nave de combate em meio a uma resistência contra uma frota inimiga, enfrentando ondas de inimigos, desviando de obstáculos, sobrevivendo a Quick Time Events em momentos críticos e enfrentando combates contra chefes. Entre as fases, o jogador precisa reparar sistemas danificados da nave por meio de um minijogo de circuitos lógicos, no qual deve combinar portas AND, OR e NOT para restabelecer a energia dos componentes, integrando uma camada educacional de lógica booleana ao gameplay.
+> Antares é um jogo de combate espacial inspirado em Space Invaders e ambientado no universo Star Wars, desenvolvido em Python com a biblioteca Pygame. O jogador assume o controle de uma nave de combate em meio a uma resistência contra uma frota inimiga, enfrentando ondas de inimigos, desviando de obstáculos, sobrevivendo a Quick Time Events em momentos críticos e enfrentando combates contra chefes. Entre as fases, o jogador precisa reparar sistemas danificados da nave por meio de um minijogo de circuitos lógicos, no qual deve responder perguntas sobre computação aprendidas em sala para restabelecer a energia dos componentes, integrando uma camada educacional de lógica ao gameplay.
 
 ## 5. Objetivo do jogador
 
@@ -43,14 +43,13 @@ Regras do grupo:
 
 - Regra 1: O jogador começa com 100% de vida.
 - Regra 2: Cada colisão é progressiva, onde os asteróides pequenos tiram 5% de vida, os médios 10% e os grandes 15% de vida.
-- Regra 3: Cada tiro reduz uma porcentagem da vida conforme o seu tipo. 
-- Regra 4: Se o jogador cair no buraco negro ele morre instantâneamente.
-- Regra 5: A fase termina após o jogador exterminar todas as naves presentes naquelas determinada fase.
-- Regra 6: Quando a nave do jogador ficar com a vida baixa o jogador terá a opção de resgatar no espaço uma ferramente de reparo para a nave, aumentando a vida em 20%, não tendo o direito de reparar no fim da fase. 
-- Regra 7: Se o jogador não conseguir reparar a nave, em qualquer situação, após 3 chances, ele perderá 3% de vida.
-- Regra 8: Se o jogador inutilizar a nave, ele volta para o início da fase atual.
-- Regra 9: Se o jogador cair no buraco negro, ele volta para a fase inicial.
-- Regra 10: O jogo acaba após o jogador eliminar o boss: A estrela da morte.
+- Regra 3: Se o jogador cair no buraco negro ele morre instantâneamente.
+- Regra 4: A fase termina após o jogador exterminar todas as naves presentes naquelas determinada fase.
+- Regra 5: Quando a nave do jogador ficar com a vida baixa o jogador terá a opção de resgatar no espaço uma ferramente de reparo para a nave, aumentando a vida em 20%. 
+- Regra 6: Se o jogador não conseguir reparar a nave, em qualquer situação, após 3 chances, ele perderá 3% de vida.
+- Regra 7: Se o jogador inutilizar a nave, ele volta para o início da fase atual.
+- Regra 8: Se o jogador cair no buraco negro, ele volta para a fase inicial.
+- Regra 9: O jogo acaba após o jogador eliminar o boss: A estrela da morte.
 
 ## 7. Condição de vitória
 
@@ -64,6 +63,7 @@ Condição de vitória:
 Condição de derrota ou encerramento:
 
 > Quando a barra de vida da nave se esgotar.
+> Receber um tiro da Estrela da Morte (DeathStar)
 > Cair no buraco negro.
 
 ## 9. Elementos previstos no jogo
@@ -96,7 +96,7 @@ Descrição:
 
 Descrição:
 
-> O jogador começa com a nave em 100%, e só tem a oportunidade de conserta-la com ferramentas de reparo coletadas e utilizadas com exito ou no fim de cada fase, onde não foram feito o uso dessas ferramentas. 
+> O jogador começa com a nave em 100%, e só tem a oportunidade de conserta-la com ferramentas de reparo coletadas e utilizadas com exito. 
 
 ## 10. Controles previstos
 
@@ -106,10 +106,6 @@ Controles do grupo:
 - Tecla/comando: Seta para baixo: mover para baixo
 - Tecla/comando: Seta para esquerda: mover para esquerda
 - Tecla/comando: Seta para direita: mover para direita
-- Tecla/comando: W: mover para cima
-- Tecla/comando: S: mover para baixo
-- Tecla/comando: A: mover para esquerda
-- Tecla/comando: D: mover para direita
 - Tecla/comando: Espaço: Atirar
 - Tecla/comando: ESC: Menu de opções
 - Tecla/comando: Mouse: Realizar o reparo da nave
@@ -122,7 +118,8 @@ Organização planejada:
 > `src/jogo.py`: contém o loop principal;
 > `src/config.py`: guarda configurações como tamanho da tela e cores;
 > `src/funcoes.py`: contém funções auxiliares;
-> `src/dados.py`: contém funções de leitura e escrita de arquivos.
+> `src/dados.py`: contém funções de leitura e escrita de arquivos;
+> `assets`:contém todas as mídias necessárias para o jogo.
 
 ## 12. Recursos externos previstos
 
