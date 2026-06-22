@@ -130,8 +130,8 @@ class DeathStar:
 
         self.base_y = self.rect.y
         self.angulo = 0
-        self.amplitude = 25
-        self.velocidade_balanco = 0.02
+        self.amplitude = 50
+        self.velocidade_balanco = 0.05
 
         # --- Superlaser ---
         self.laser_estado = "recarregando"
