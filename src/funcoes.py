@@ -18,19 +18,19 @@ class _SomMudo:
 
 
 _ARQUIVOS_SONS = {
-    "antares": "assets/sons/sound_antares.mp3",
-    "coleta_gema": "assets/sons/coleta_gema.mp3",
-    "colisao_nave": "assets/sons/colisao_asteroide-nave.mp3",
-    "conclusao_jogo": "assets/sons/conclusao_jogo.mp3",
-    "fase_deathstar": "assets/sons/fase_deathstar.mp3",
-    "laser_deathstar": "assets/sons/laser_deathstar.mp3",
-    "tela_reparo": "assets/sons/tela_reparo.mp3",
+    "antares": "assets/sons/sound_antares.ogg",
+    "coleta_gema": "assets/sons/coleta_gema.ogg",
+    "colisao_nave": "assets/sons/colisao_asteroide-nave.ogg",
+    "conclusao_jogo": "assets/sons/conclusao_jogo.ogg",
+    "fase_deathstar": "assets/sons/fase_deathstar.ogg",
+    "laser_deathstar": "assets/sons/laser_deathstar.ogg",
+    "tela_reparo": "assets/sons/tela_reparo.ogg",
     "musica_fase_123": "assets/sons/somdefundo123.ogg",
     "tiro_jogador": "assets/sons/somtironossanave.wav",
     "tiro_inimigo": "assets/sons/somtironaveinimiga_1.wav",
     "morte_personagens": "assets/sons/sommorteinimigo.wav",
     "conclusao_fase": "assets/sons/passadefase.wav",
-    "black_hole": "assets/sons/black_hole_sound.mp3",
+    "black_hole": "assets/sons/black_hole_sound.ogg",
 }
 
 # Volumes especificos para sons que destoam do padrao. O do buraco negro fica

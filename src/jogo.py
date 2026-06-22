@@ -168,11 +168,6 @@ def tela_fase_cinema(tela, fase_atual):
 def executar_jogo():
     """Executa o loop principal do jogo e controla estado, colisões e pontuação."""
     pygame.init()
-    pygame.mixer.init()
-
-    # pygame.mixer.music.load("assets/sons/somdefundo123.ogg")
-    # pygame.mixer.music.set_volume(0.7)
-    # pygame.mixer.music.play(-1)
 
     tela = pygame.display.set_mode(
         (LARGURA_TELA, ALTURA_TELA),
@@ -213,6 +208,9 @@ def executar_jogo():
     # Loop externo: cada volta e uma nova partida.
     jogando = True
     fase_atual = 1
+    # Canal da musica de fundo. Sound.play() devolve o canal (ou None quando o
+    # _SomMudo entra no lugar por falta de driver), o que ja protege o jogo.
+    canal_musica = None
     while jogando:
         # --- Reset: variaveis que vivem apenas uma partida nascem do zero ---
         lista_obstaculos = []
@@ -235,12 +233,10 @@ def executar_jogo():
         velocidade_entrada = 3
         entrando = iniciar_entrada(jogador, ALTURA_TELA)
         if fase_atual in [1, 2, 3]:
-            if not pygame.mixer.music.get_busy():
-                pygame.mixer.music.load("assets/sons/somdefundo123.ogg")
-                pygame.mixer.music.play(-1)
+            if canal_musica is None or not canal_musica.get_busy():
+                canal_musica = sons_jogo["musica_fase_123"].play(-1)
         elif fase_atual == 4:
-            pygame.mixer.music.load("assets/sons/fase_deathstar.mp3")
-            pygame.mixer.music.play(-1)
+            canal_musica = sons_jogo["fase_deathstar"].play(-1)
         ferramenta_coletada_na_fase = False
         ferramenta_na_tela = False
         ferramenta_rect = pygame.Rect(0, 0, 0, 0)
@@ -381,7 +377,9 @@ def executar_jogo():
                 #     sons_jogo["musica_fase_123"].stop()
                 # elif fase_atual == 4:
                 #     sons_jogo["fase_deathstar"].stop()
-                pygame.mixer.music.stop()
+                if canal_musica is not None:
+                    canal_musica.stop()
+                    canal_musica = None
                 sons_jogo["conclusao_fase"].play()
                 tela_loading(tela, fase_atual, relogio)
                 fase_atual += 1 
@@ -393,11 +391,9 @@ def executar_jogo():
                     tela_fase_cinema(tela, fase_atual)
 
                     if fase_atual in [1, 2, 3]:
-                        pygame.mixer.music.load("assets/sons/somdefundo123.ogg")
-                        pygame.mixer.music.play(-1)
+                        canal_musica = sons_jogo["musica_fase_123"].play(-1)
                     elif fase_atual == 4:
-                        pygame.mixer.music.load("assets/sons/fase_deathstar.mp3")
-                        pygame.mixer.music.play(-1)
+                        canal_musica = sons_jogo["fase_deathstar"].play(-1)
 
                     iniciar_legenda(estado_legenda, FALAS_INICIO_FASE[fase_atual], sons_jogo["antares"])
 
@@ -515,7 +511,9 @@ def executar_jogo():
 
                 # Estrela da morte destruida: o jogador venceu.
                 if vidas_death_star <= 0:
-                    pygame.mixer.music.stop()
+                    if canal_musica is not None:
+                        canal_musica.stop()
+                        canal_musica = None
                     venceu = True
                     rodando = False
 
@@ -593,7 +591,9 @@ def executar_jogo():
                 #     sons_jogo["musica_fase_123"].stop()
                 # elif fase_atual == 4:
                 #     sons_jogo["fase_deathstar"].stop()
-                pygame.mixer.music.stop()
+                if canal_musica is not None:
+                    canal_musica.stop()
+                    canal_musica = None
                 sons_jogo["morte_personagens"].play()
                 pygame.time.wait(500)
                 rodando = False
