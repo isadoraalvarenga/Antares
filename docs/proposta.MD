@@ -27,7 +27,7 @@ Tipo escolhido pelo grupo:
 
 Descrição:
 
-> Antares é um jogo de combate espacial inspirado em Space Invaders e ambientado no universo Star Wars, desenvolvido em Python com a biblioteca Pygame. O jogador assume o controle de uma nave de combate em meio a uma resistência contra uma frota inimiga, enfrentando ondas de inimigos, desviando de obstáculos, sobrevivendo a Quick Time Events em momentos críticos e enfrentando combates contra chefes. Entre as fases, o jogador precisa reparar sistemas danificados da nave por meio de um minijogo de circuitos lógicos, no qual deve combinar portas AND, OR e NOT para restabelecer a energia dos componentes, integrando uma camada educacional de lógica booleana ao gameplay.
+> Antares é um jogo de combate espacial inspirado em Space Invaders e ambientado no universo Star Wars, desenvolvido em Python com a biblioteca Pygame. O jogador assume o controle de uma nave de combate em meio a uma resistência contra uma frota inimiga, enfrentando ondas de inimigos, desviando de obstáculos, sobrevivendo a Quick Time Events em momentos críticos e enfrentando combates contra chefes. Quando a nave fica danificada, o jogador precisa reparar seus sistemas por meio de um minijogo de quiz, no qual responde perguntas de múltipla escolha sobre lógica de programação e computação aprendidas em sala para restabelecer a energia dos componentes, integrando uma camada educacional ao gameplay.
 
 ## 5. Objetivo do jogador
 
@@ -44,13 +44,12 @@ Regras do grupo:
 - Regra 1: O jogador começa com 100% de vida.
 - Regra 2: Cada colisão é progressiva, onde os asteróides pequenos tiram 5% de vida, os médios 10% e os grandes 15% de vida.
 - Regra 3: Cada tiro reduz uma porcentagem da vida conforme o seu tipo.
-- Regra 4: Se o jogador cair no buraco negro ele morre instantâneamente.
+- Regra 4: Se o jogador for engolido pelo buraco negro, ele volta para a fase inicial (fase 1) com a vida restaurada, sem que isso cause fim de jogo.
 - Regra 5: A fase termina após o jogador exterminar todas as naves presentes naquelas determinada fase.
 - Regra 6: Quando a nave do jogador ficar com a vida baixa o jogador terá a opção de resgatar no espaço uma ferramente de reparo para a nave, aumentando a vida em 20%, não tendo o direito de reparar no fim da fase.
 - Regra 7: Se o jogador não conseguir reparar a nave, em qualquer situação, após 3 chances, ele perderá 3% de vida.
 - Regra 8: Se o jogador inutilizar a nave, ele volta para o início da fase atual.
-- Regra 9: Se o jogador cair no buraco negro, ele volta para a fase inicial.
-- Regra 10: O jogo acaba após o jogador eliminar o boss: A estrela da morte.
+- Regra 9: O jogo acaba após o jogador eliminar o boss: A estrela da morte.
 
 ## 7. Condição de vitória
 
@@ -64,7 +63,7 @@ Condição de vitória:
 Condição de derrota ou encerramento:
 
 > Quando a barra de vida da nave se esgotar.
-> Cair no buraco negro.
+> Receber o disparo do superlaser da Estrela da Morte.
 
 ## 9. Elementos previstos no jogo
 
@@ -110,10 +109,6 @@ Controles do grupo:
 - Seta para baixo: mover para baixo
 - Seta para esquerda: mover para esquerda
 - Seta para direita: mover para direita
-- W: mover para cima
-- S: mover para baixo
-- A: mover para esquerda
-- D: mover para direita
 - Espaço: atirar
 - ESC: menu de opções
 - Mouse: realizar o reparo da nave
