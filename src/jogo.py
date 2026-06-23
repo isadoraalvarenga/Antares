@@ -634,13 +634,13 @@ def executar_jogo():
 
             fonte_hud = pygame.font.Font(FONTE, 24)
 
-            texto_fase = fonte_hud.render(f"FASE {fase_atual}", True, BRANCO)
+            texto_fase = fonte_hud.render(f"fase {fase_atual}", True, BRANCO)
             rect_fase = texto_fase.get_rect()
            
             rect_fase.topright = (LARGURA_TELA - 20, 20)
             tela.blit(texto_fase, rect_fase)
             
-            texto_alvo = fonte_hud.render(f"ALVOS: {enemies_mortos}/{total_enemies_da_fase}", True, BRANCO)
+            texto_alvo = fonte_hud.render(f"alvos: {enemies_mortos}/{total_enemies_da_fase}", True, BRANCO)
             rect_alvo = texto_alvo.get_rect()
             
             rect_alvo.topright = (LARGURA_TELA - 20, rect_fase.bottom + 5)
